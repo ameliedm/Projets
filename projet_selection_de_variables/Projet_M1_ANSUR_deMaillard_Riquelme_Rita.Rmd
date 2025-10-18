@@ -1,0 +1,1059 @@
+---
+title: "Projet - Sélection de modèle en régression linéaire"
+author: 'Université de Bordeaux - M1 Master MAS - UE : Modèles de régression'
+date: "Année 2024-2025"
+output:
+  html_document:
+    df_print: paged
+  pdf_document:
+    number_sections: yes
+fontsize: 11pt
+---
+
+**Nom : Riquelme **  
+**Prénom : Jeanne ** 
+
+**Nom : Rita **  \
+**Prénom : Mathis **
+
+**Nom : de Maillard **  \
+**Prénom : Amélie **
+
+\newtheorem{question}{Question}
+\newtheorem{definition}{Definition}
+
+\newcommand{\Var}{\mbox{Var}}
+\newcommand{\Cov}{\mbox{Cov}}
+
+**Préambule**
+
+Dans ce projet, il est proposé de s'intéresser à l'analyse d'un jeu de données réelles disponible à l'URL : https://www.openlab.psu.edu/ansur2/.
+
+Il s'agit du jeu de données ``ANSUR II`` (Anthropometric Survey of US Army Personnel) relatives à des caractéristiques de taille et forme du corps humain. Il s’agit d’un ensemble de 93 mesures effectuées sur plus de 6 000 militaires américains adultes, dont 4 082 hommes et 1 986 femmes. On va proposer de choisir l'une des variables (par exemple le poids d'un individu) et chercher à l'expliquer en fonction des $p=92$ autres variables du jeu de données à l'aide d'un modèle linéaire. Le but de votre analyse statistique est de trouver un sous-ensemble (de petite taille) de variables qui permettent de bien expliquer le poids d'individu. Lors de votre avancée dans le projet, vous pourrez aussi considérer une autre variable à expliquer en fonction des autres comme par exemple la taille d'un individu.
+
+Pour vous guider dans l'explication du nom des variables en Anglais, vous pourrez consulter ce document très détaillé sur ce jeu de données qui propose en particulier une traduction en Français du nom des variables ainsi qu'une étude descriptive de la répartition de leurs valeurs entre les hommes et les femmes :
+
+https://pbil.univ-lyon1.fr/R/pdf/pps100.pdf
+
+**Travail à effectuer par groupe de 2 ou 3 étudiants.** Vous devez rendre sous la forme d'un unique rapport en .html produit à partir de Rmarkdown (en incluant uniquement le code nécessaire aux conclusions pertinentes de votre étude) : 
+
+- une analyse de statistique descriptive du jeu de données (par exemple : utiliser des Boxplots, méthode de visualisation d'une matrice de corrélation, analyse en composantes principales)
+
+- décrire votre méthode de sélection de modèle pour expliquer le poids (ou bien la taille) d'un individu en fonction d'un petit nombre de variables pertinentes
+
+- distinguer éventuellement dans votre analyse statitique les hommes et les femmes
+
+On veillera à privilégier des tableaux et des outils graphiques pour rendre compte des conclusions de votre étude.
+
+**Prise en main des données**
+ 
+```{r eval=TRUE, warning=FALSE, error = TRUE, message=FALSE}
+# Lecture des données ANSUR
+
+ansurm = read.csv('ANSUR_II_MALE_Public.csv')
+ansurf = read.csv('ANSUR_II_FEMALE_Public.csv')
+
+p = 93 # Nombre de variables morphométriques
+# names(ansurm)
+# names(ansurf)
+
+donnees_m = ansurm[2:(p+1)]
+donnees_f = ansurf[2:(p+1)]
+nom_variables = names(ansurm)[2:(p+1)]
+print(nom_variables)
+
+# Choix de la variable à expliquer
+indices = 1:p
+pos = indices[nom_variables == "weightkg"]
+# pos = indices[nom_variables == "stature"]
+
+Y_m = donnees_m[,pos]/10 # Conversion en kg
+X_m = donnees_m[,-pos]
+dim(X_m)
+
+Y_f = donnees_f[,pos]/10 # Conversion en kg
+X_f = donnees_f[,-pos]
+dim(X_f)
+
+mean(Y_m)
+mean(Y_f)
+var(Y_m)
+
+# Visualisation de la répartition de la variable à expliquer selon le sexe
+polycurve <- function(x, y, base.y = min(y), ...) {
+  polygon(x = c(min(x), x, max(x)), y = c(base.y, y, base.y), ...)
+}
+
+colM = rgb(0.2, 0.2, 1, 0.5)
+colF = rgb(1, 0.2, 0.2, 0.5)
+
+res_f = density(Y_f)
+plot(res_f$x,res_f$y,type="l",xlab="Poids en kg",ylab="")
+polycurve(res_f$x, res_f$y, base.y = 0, col = colF)
+
+res_m = density(Y_m)
+lines(res_m$x,res_m$y,type="l")
+polycurve(res_m$x, res_m$y, base.y = 0, col = colM)
+
+legend(100, 0.035, legend=c("Hommes", "Femmes"),fill=c(colM, colF))
+title('Répartition de la variable Y')
+```
+
+
+<span style="font-size:20px;">**Analyse descriptive**</span>
+
+L’objectif de cette étude est d’examiner les relations entre certaines caractéristiques anthropométriques humaines, mesurées dans le cadre de l’étude *ANSUR II*, et de proposer un modèle pour expliquer le poids des individus. Le jeu de données *ANSUR II* contient 93 mesures détaillées sur 6 068 militaires adultes américains, dont 4 082 hommes et 1 986 femmes.  
+
+Dans une première étape, nous effectuons une analyse descriptive des données. Cette analyse vise à fournir une vue d'ensemble des caractéristiques de la population étudiée, en décrivant les distributions des variables principales et en explorant les relations éventuelles entre celles-ci. Une attention particulière sera portée à la variable cible, le poids et aux variables explicatives potentielles. Notre objectif est de mieux comprendre la structure des données, d’identifier les éventuelles valeurs aberrantes, de détecter des tendances générales, et de guider la sélection d’un sous-ensemble réduit de variables explicatives pour le modèle. Dans ce contexte, nous nous intéresserons notamment aux indicateurs statistiques clés (moyenne, médiane, variance, etc.), aux représentations graphiques (histogrammes, nuages de points, etc.) et aux corrélations entre les variables.  
+
+Nous allons tout d'abord nous intéresser à la variable poids plus en détail.
+
+```{r}
+summary(Y_m)  # Poids des hommes
+summary(Y_f)  # Poids des femmes
+```
+La variable poids présente une distribution avec une moyenne de 85.5 kg et une médiane de 84.6 kg pour les hommes et une moyenne de 67.8 kg et une médiane de 66.8 kg pour les femmes.On constate que les moyennes et les médianes sont assez proches pour les 2 sexes car comme on peut le voir dans le graphe d'introduction, la répartition est assez normale dans les deux cas. Les valeurs minimales sont plutôt proches mais les différences de poids sont importantes entre les hommes et les femmes. 
+Les valeurs minimales et maximales sont respectivement de 39.3 kg et 144.2 kg chez les hommes et de 35.8 kg et 119.6 kg chez les femmes, ce qui suggère une dispersion relativement importante. On remarque également que la différence entre le premier et le troisième quartile n'est pas très grande donc beaucoup d'invidus se retrouve condensés autour de la médiane.
+
+
+```{r echo=FALSE}
+boxplot(Y_m, Y_f, names = c("Hommes", "Femmes"),
+        col = c("blue", "red"), main = "Comparaison du poids par sexe",
+        ylab = "Poids (kg)")
+```
+<br> L'analyse de ces boxplots met en avant ce que nous avons vu concernant les quartiles et les différentes données du résumé. On constate qu'il existe beaucoup de valeurs aberrantes, autant chez les femmes que chez les hommes.
+
+Afin de poursuivre notre analyse descriptive avec d'autres variables, nous allons nous intéresser à la taille, une mesure que l'on connait généralement et qui pourrait expliquer le poids. 
+
+```{r echo=FALSE}
+stature_m = X_m[, which(nom_variables == "stature")]
+stature_f = X_f[, which(nom_variables == "stature")]
+
+hist(stature_m, col = rgb(0.2, 0.2, 1, 0.5), breaks = 20, main = "Distribution de la taille",
+     xlab = "Taille (cm)", xlim = range(c(stature_m, stature_f)))
+hist(stature_f, col = rgb(1, 0.2, 0.2, 0.5), breaks = 20, add = TRUE)
+legend("topright", legend = c("Hommes", "Femmes"),
+       fill = c(rgb(0.2, 0.2, 1, 0.5), rgb(1, 0.2, 0.2, 0.5)))
+```
+<br> Nous constatons que les répartitions sont également normales pour la taille. Les hommes sont en grande majorité plus grands que les femmes d'une quinzaine de centimètres en moyenne. Cette tendance pourrait suivre celle du poids.
+Nous faisons donc un nuage de points regroupant en rouge les observations des femmes et en bleu celles des hommes.
+
+```{r echo=FALSE}
+plot(stature_m, Y_m, col = "blue", pch = 16, 
+     xlab = "Taille (cm)", ylab = "Poids (kg)",
+     main = "Poids vs Taille")
+points(stature_f, Y_f, col = "red", pch = 16)
+legend("topleft", legend = c("Hommes", "Femmes"),
+       col = c("blue", "red"), pch = 16)
+```
+<br> Nous pouvons constater que le nuage de points entre le poids et la taille montre une relation positive légèrement marquée : les individus plus grands tendent à avoir un poids plus élevé. Cependant, des variations significatives existent dans les poids pour des tailles similaires, probablement en raison de différences de morphologie ou de composition corporelle. Les points sont trop dispersés pour considérer que la taille explique le poids. 
+
+Nous devons donc nous intéresser aux autres variables. 
+
+Nous avons vu à travers les ACP que les deux premières dimensions expliquent environ 60% de la variance. Nous avons également vu qu'il existe des variables qui sont très correlées car certaines d'entre elles semblent les unes sur les autres. Certaines, en revanche, semblent très décorrélées. La plupart des vecteurs semblent assez longs donc la plupart des variables contribuent à la variance expliquée par l’ACP. Cependant, les graphiques n'étant pas lisibles car 93 vecteurs représentent un grand nombre, nous avons décidé de ne pas les conserver.
+
+Afin d'analyser plus simplement d'autres variables, nous avons regarder la corrélation des variables que l'on a directement. Nous avons vu que le tableau de correlation contenant toutes les variables est assez peu lisible lui aussi. Afin de rendre plus compréhensible notre analyse descriptive, nous allons la concentrer sur les variables les plus corrélées au poids. 
+
+```{r echo=FALSE}
+# Corrélation poids et autres variables
+corr_weight_m <- cor(X_m, Y_m, use = "complete.obs")
+corr_weight_f <- cor(X_f, Y_f, use = "complete.obs")
+
+# Résumé des données pour vérifier les problèmes éventuels
+#summary(X_m)
+#summary(X_f)
+
+# Vérifier si des colonnes sont entièrement NA
+#colSums(is.na(X_m))
+#colSums(is.na(X_f))
+
+# Vérifier les types des colonnes
+#sapply(X_m, class)
+#sapply(X_f, class)
+
+#X_m <- X_m[, sapply(X_m, is.numeric)]
+#X_f <- X_f[, sapply(X_f, is.numeric)]
+
+corr_weight_m <- setNames(cor(X_m, Y_m, use = "complete.obs"), colnames(X_m))
+corr_weight_f <- setNames(cor(X_f, Y_f, use = "complete.obs"), colnames(X_f))
+
+#print(corr_weight_m)
+#print(corr_weight_f)
+
+# Top 5 variables les plus corrélées
+top_vars_m <- names(sort(abs(corr_weight_m), decreasing = TRUE)[1:5])
+top_vars_f <- names(sort(abs(corr_weight_f), decreasing = TRUE)[1:5])
+
+print(top_vars_m)
+print(sort(abs(corr_weight_m), decreasing = TRUE)[1:5])
+print(top_vars_f)
+print(sort(abs(corr_weight_f), decreasing = TRUE)[1:5])
+
+```
+<br> Nous avons désormais nos 5 variables les plus corrélées au poids, pour les hommes et pour les femmes. Nous remarquons que ce ne sont pas exactement les mêmes. Ces corrélations élevées (> 0.84) montrent que ces dimensions sont des indicateurs clés pour expliquer la masse corporelle des individus, probablement en raison de leur lien direct avec la composition corporelle. Dans la partie de séléction du modèle, nous réutiliserons également la corrélation pour faire un premier tri dans les variables. 
+Nous pouvons désormais cibler notre analyse descriptive vers les 5 variables pour chaque sexe. 
+
+```{r echo=FALSE}
+par(mfrow=c(2,3))
+for (var in top_vars_m) {
+  plot(X_m[, var], Y_m, main = paste("Poids vs", var, "(Hommes)"),
+       xlab = var, ylab = "Poids (kg)", col = "blue", pch = 16)
+}
+```
+<br> Les nuages de points entre le poids et les cinq variables les plus corrélées chez les hommes montrent des relations linéaires claires. Par exemple, la corrélation positive entre poids et buttockcircumference (la circonférence des fesses) indique que les individus ayant une plus grande circonférence au niveau des fesses ont tendance à peser davantage. Les points sont bien moins dispersés que lors de l'analyse poids/taille.
+
+```{r echo=FALSE}
+par(mfrow=c(2,3))
+for (var in top_vars_f) {
+  plot(X_f[, var], Y_f, main = paste("Poids vs", var, "(Femmes)"),
+       xlab = var, ylab = "Poids (kg)", col = "red", pch = 16)
+}
+```
+<br> Pour les femmes, on retrouve le même constat, avec comme variable la plus corrélées la circonférence des fesses également. La corrélation est très visible et sera une bonne piste pour commencer notre sélection de modèle dans la seconde partie.
+
+Nous allons désormais nous pencher sur la circonférence des fesses.
+```{r echo=FALSE}
+var <- top_vars_m[1]  # Exemple avec la première variable corrélée
+dens_m <- density(X_m[, var], na.rm = TRUE)
+dens_f <- density(X_f[, var], na.rm = TRUE)
+
+plot(dens_m, col = "blue", lwd = 2, main = paste("Densité de", var),
+     xlab = var, ylab = "Densité")
+lines(dens_f, col = "red", lwd = 2)
+legend("topright", legend = c("Hommes", "Femmes"), col = c("blue", "red"), lwd = 2)
+
+summary(X_m$buttockcircumference)
+summary(X_f$buttockcircumference)
+
+```
+
+<br> Nous nous intéressons maintenant plus en détail à la variable la plus corrélée au poids : la circonférence des fesses. On constate que la circonférence à une distribution normale et que celles des hommes et des femmes sont extrêmement similaires, la principale différence étant la valeur minimale. Cependant, chez les hommes, les valeurs inférieures à la valeur minimale des femmes semblent très anecdotiques.
+Ces similarités importantes permettent de déduire que d'autres variables influencent de manière importante le poids car les poids des hommes et des femmes sont quand à eux très différents.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+library(GGally)
+
+# Dataframe des variables d'intérêt
+top_data_f <- data.frame(Y_f, X_f[, top_vars_f])
+
+# Scatterplot matrix
+ggpairs(top_data_f, columns = 1:(length(top_vars_f)+1), title = "Scatterplot Matrix : Femmes")
+
+```
+<br> La matrice de scatterplots met en évidence des relations intéressantes entre les variables. Par exemple, thighcircumference (circonférence de la cuisse) et buttockcircumference (circonférence des fesses) montrent une forte corrélation positive entre elles, en plus de leur relation individuelle avec le poids. Cela suggère une interdépendance entre ces dimensions corporelles ce qui pourraient être une bonne piste pour regrouper les variables ultérieurement.
+On constate également que les répartitions sont assez normales et que les corrélations sont toutes plutôt élevées. Certains nuages de points sont plus éparpillés que d'autres comme bideltoidbreadth (largeur du bideltoïde) et thighcircumference (circonférence de la cuisse) mais les nuages de points sont en grande majorité assez linéaire.
+
+Le même type de constat se fait pour les hommes bien que les corrélations entre les variables différentes de celles des femmes soient légèrement plus élevées. Les nuages de points sont également plus linéaires et moins éparpillés. En revanche, les valeurs ont toujours une répartition normale. Les variables thighcircumference (circonférence de la cuisse) et buttockcircumference (circonférence des fesses) sont toujours aussi fortement corrélées et linéairement dépendantes. Les résultats étant très similaires, nous avons décidé de ne conserver que celui des femmes. Cependant, dans le cas des hommes, les variables les plus corrélées sont buttockcircumference (circonférence des fesses) et hipbreadthsitting (largeur des hanches assis), la deuxième variable n'apparait pas chez les variables les plus corrélées chez les femmes.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+library(plotly)
+# Exemple en 3D deux variables corrélées et le poids
+plot_ly(data.frame(X_m, Y_m), x=~X_m[[top_vars_m[1]]], y=~X_m[[top_vars_m[2]]], z=~Y_m, type="scatter3d", mode="markers",
+        marker=list(size=3, color=~Y_m, colorscale="Viridis", showscale=TRUE)) %>%
+  layout(scene=list(xaxis=list(title=top_vars_m[1]), yaxis=list(title=top_vars_m[2]), zaxis=list(title="Poids (kg)")))
+
+# Exemple en 3D deux variables corrélées et le poids
+plot_ly(data.frame(X_m, Y_m), x=~X_m[[top_vars_m[1]]], y=~X_m[[top_vars_m[5]]], z=~Y_m, type="scatter3d", mode="markers",
+        marker=list(size=3, color=~Y_m, colorscale="Viridis", showscale=TRUE)) %>%
+  layout(scene=list(xaxis=list(title=top_vars_m[1]), yaxis=list(title=top_vars_m[5]), zaxis=list(title="Poids (kg)")))
+
+```
+<br> Ici, nous avons décidé de nous concentrer sur les observations masculines afin de voir une différence entre les variables les plus corrélées au poids et celles les plus corrélées entre elles (chez les femmes, ceux sont les mêmes). Nous avons donc fait une analyse multivariée, prenant tout d'abord les deux variables les plus corrélées au poids avec le poids lui même puis un autre analyse avec les deux variables les plus corrélées entre elles de nos 5 variables avec le poids. Dans les deux cas, la tendance du poids semble assez linéaire. Les individus ayant des valeurs élevées pour les deux dimensions tendent à avoir un poids supérieur, confirmant l'importance de ces deux variables comme prédicteurs du poids. Cependant, dans la deuxième analyse, les points sont moins dispersés.
+
+Après avoir réalisé cette analyse descriptive des données, nous allons procéder à la deuxième étape qui consiste à faire la séléction de modèle.
+
+<span style="font-size:20px;">**Sélection de modèle**</span>
+
+Nous avons décidé de tester plusieurs modèles pour répondre à la problématique, afin d'explorer différentes approches. Voici des exemples de modèles évalués :
+
+- Premier modèle :
+
+On commence par calculer les corrélations entre chaque variable explicative et le poids. Puis on identifie les variables fortement corrélées entre elles et on ne conserve que celles qui restent. Ensuite on forme des groupes de variables corrélées et sélectionnons, dans chaque groupe, la variable la plus corrélée au poids. On construit un nouveau jeu de données avec les variables sélectionnées. Et finalement on effectue une sélection avec l'AIC en mode "both" .
+
+Points négatifs de ce modèle : La méthode de regroupement peut être influencée par des corrélations inattendues ou non significatives. La suppression de variables corrélées peut éliminer des dimensions importantes, notamment si plusieurs variables corrélées représentent des aspects distincts du poids.
+
+
+- Deuxième modèle :
+
+Pour ce modèle on calcule d’abord les corrélations entre chaque variable explicative et le poids, puis on sélectionne celles présentant une corrélation absolue supérieure à 0.5. Ensuite, on identifie et élimine les variables fortement corrélées entre elles (|r| > 0.8) afin de ne conserver qu'une variable représentative par groupe. À partir des variables ainsi sélectionnées, on fait une sélection basée sur l'AIC en mode "both". Enfin, on ne conserve que les variables ayant une p-valeur inférieure à 2e-16 pour réduire une dernière fois le nombre de variables.
+
+Points négatifs de ce modèle : comme pour le premier modèle la suppression de variables corrélées peut éliminer des dimensions importantes. Le seuil de p<2e−16 est très restrictif, risquant d’exclure des variables pertinentes.
+
+- Troisième modèle :
+
+On commence par supprimer les variables présentant une faible corrélation avec le poids . Ensuite, nous identifions les variables très corrélées entre elles (seuil de corrélation > 0.9) et les regroupons pour créer de nouvelles variables représentatives. Cette étape est répétée une seconde fois pour vérifier qu'il ne reste plus de variables corrélées entre elles, en regroupant à nouveau si nécessaire. Avec les variables restantes, on effectue une sélection un AIC en mode "both", suivie d'une suppression des variables présentant des p-valeurs élevées.
+
+Points négatifs de ce modèle : Recommencer plusieurs fois les étapes d’identification et de regroupement peut entraîner des ajustements excessifs et des problèmes de surapprentissage. Le RMSE n’est pas très bon avec ce modèle.
+
+Le modèle final retenu ainsi que les étapes qui le composent sont les suivants :
+
+- Modèle final :
+
+On commence par regrouper les variables explicatives en fonction des parties du corps auxquelles elles se rapportent. Dans chaque groupe, on calcule les corrélations entre les variables et le poids, en ne conservant que celles ayant une corrélation absolue supérieure à 0.7. Les variables sélectionnées ont ensuite été soumises à une sélection basée sur l’AIC en mode "both". Enfin, une dernière réduction a été effectuée en fonction des p-valeurs, avant de réintégrer les variables dans leurs groupes respectifs pour le modèle final.
+
+Avantage de ce modèle : Le regroupement final des variables retenues améliore l’interprétabilité des résultats. Les résultats obtenus par le CP de Mallows ou le RMSE sont excellents. 
+
+Voici les étapes pour avoir nos modèles finaux pour les hommes et les femmes.
+
+```{r include=FALSE}
+# Retirer la variable cible "weightkg"
+variables_sans_poids <- nom_variables[nom_variables != "weightkg"]
+
+groupes_variables <- list(
+  
+  # Groupe Main
+  main = c("handbreadth", "handcircumference", "handlength", "palmlength"),
+  
+  # Groupe Pieds
+  pied = c("balloffootcircumference", "balloffootlength", "bimalleolarbreadth", 
+           "footbreadthhorizontal", "footlength", "heelbreadth", 
+           "lateralmalleolusheight", "anklecircumference", "heelanklecircumference"),
+  
+  # Groupe Tête
+  tete = c("bitragionchinarc", "bitragionsubmandibulararc", "bizygomaticbreadth", 
+           "headbreadth", "headcircumference", "interpupillarybreadth", 
+           "earbreadth", "earlength", "earprotrusion", "headlength", 
+           "mentonsellionlength", "neckcircumference", "neckcircumferencebase", "tragiontopofhead"),
+  
+  # Groupe Bras
+  bras = c("span", "sleevelengthspinewrist", "radialestylionlength", "sleeveoutseam", 
+           "wristcircumference", "forearmhandlength", "forearmcenterofgriplength", 
+           "thumbtipreach", "bicepscircumferenceflexed", "forearmcircumferenceflexed", 
+           "acromionradialelength", "shoulderelbowlength"),
+  
+  # Groupe Tronc
+  tronc = c("buttockcircumference", "chestcircumference", "shouldercircumference", 
+            "waistcircumference", "verticaltrunkcircumferenceusa", "waistdepth", 
+            "chestdepth", "crotchlengthomphalion", "abdominalextensiondepthsitting", 
+            "shoulderlength", "biacromialbreadth", "bideltoidbreadth", "forearmforearmbreadth", 
+            "hipbreadthsitting", "waistfrontlengthsitting", "interscyei", "interscyeii", 
+            "waistbacklength", "bicristalbreadth", "chestbreadth", "hipbreadth", 
+            "waistbreadth", "buttockdepth", "crotchlengthposterioromphalion"),
+  
+  # Groupe Jambe
+  jambe = c("functionalleglength", "buttockkneelength", "buttockpopliteallength", 
+            "kneeheightsitting", "poplitealheight", "thighclearance", "tibialheight", 
+            "kneeheightmidpatella", "lateralfemoralepicondyleheight", "calfcircumference", 
+            "lowerthighcircumference", "thighcircumference"),
+  
+  # Groupe Stature
+  stature = c("overheadfingertipreachsitting", "elbowrestheight", "eyeheightsitting", 
+              "sittingheight", "axillaheight", "chestheight", "iliocristaleheight", 
+              "tenthribheight", "suprasternaleheight", "waistheightomphalion", "crotchheight", 
+              "buttockheight", "trochanterionheight", "stature", "cervicaleheight", 
+              "acromialheight", "wristheight")
+)
+
+# Vérification des regroupements
+print("Nombre total de variables regroupées :")
+nb_total <- sum(sapply(groupes_variables, length))
+nb_total  # Devrait être égal à 92 (car on enlève weightkg)
+groupes_variables
+```
+
+Création du tableau des groupes de variables
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+data_list <- list(
+  main = c("handbreadth", "handcircumference", "handlength", "palmlength"),
+  pied = c("balloffootcircumference", "balloffootlength", "bimalleolarbreadth", 
+           "footbreadthhorizontal", "footlength", "heelbreadth", 
+           "lateralmalleolusheight", "anklecircumference", "heelanklecircumference"),
+  tete = c("bitragionchinarc", "bitragionsubmandibulararc", "bizygomaticbreadth", 
+           "headbreadth", "headcircumference", "interpupillarybreadth", 
+           "earbreadth", "earlength", "earprotrusion", "headlength", 
+           "mentonsellionlength", "neckcircumference", "neckcircumferencebase", 
+           "tragiontopofhead"),
+  bras = c("span", "sleevelengthspinewrist", "radialestylionlength", "sleeveoutseam", 
+           "wristcircumference", "forearmhandlength", "forearmcenterofgriplength", 
+           "thumbtipreach", "bicepscircumferenceflexed", "forearmcircumferenceflexed", 
+           "acromionradialelength", "shoulderelbowlength"),
+  tronc = c("buttockcircumference", "chestcircumference", "shouldercircumference", 
+            "waistcircumference", "verticaltrunkcircumferenceusa", "waistdepth", 
+            "chestdepth", "crotchlengthomphalion", "abdominalextensiondepthsitting", 
+            "shoulderlength", "biacromialbreadth", "bideltoidbreadth", "forearmforearmbreadth", 
+            "hipbreadthsitting", "waistfrontlengthsitting", "interscyei", "interscyeii", 
+            "waistbacklength", "bicristalbreadth", "chestbreadth", "hipbreadth", 
+            "waistbreadth", "buttockdepth", "crotchlengthposterioromphalion"),
+  jambe = c("functionalleglength", "buttockkneelength", "buttockpopliteallength", 
+            "kneeheightsitting", "poplitealheight", "thighclearance", "tibialheight", 
+            "kneeheightmidpatella", "lateralfemoralepicondyleheight", "calfcircumference", 
+            "lowerthighcircumference", "thighcircumference"),
+  stature = c("overheadfingertipreachsitting", "elbowrestheight", "eyeheightsitting", 
+              "sittingheight", "axillaheight", "chestheight", "iliocristaleheight", 
+              "tenthribheight", "suprasternaleheight", "waistheightomphalion", 
+              "crotchheight", "buttockheight", "trochanterionheight", "stature", 
+              "cervicaleheight", "acromialheight", "wristheight")
+)
+
+# Trouver la longueur maximale des catégories
+max_length <- max(sapply(data_list, length))
+
+# Compléter les catégories plus petites avec des chaînes vides
+data_list_padded <- lapply(data_list, function(x) {
+  # Compléter avec des chaînes vides pour égaliser la longueur
+  length(x) <- max_length
+  x[is.na(x)] <- ""  # Remplacer les NAs par des chaînes vides
+  return(x)
+})
+
+# Convertir la liste en un data.frame
+df <- as.data.frame(data_list_padded)
+
+# Afficher le tableau avec kable
+#library(knitr)
+#kable(df, align = rep("l", ncol(df)), col.names = names(df))
+
+# Affichage du tableau sous forme propre avec knitr::kable
+library(kableExtra)
+
+kable(df, caption = "Groupes de variables") %>%
+  kable_styling(full_width = F, bootstrap_options = c("striped", "hover", "condensed"))
+
+```
+
+
+
+```{r include=FALSE}
+# Créer des sous-ensembles pour chaque groupe
+X_m_groupes <- list()
+X_f_groupes <- list()
+
+for (groupe in names(groupes_variables)) {
+  X_m_groupes[[groupe]] <- X_m[, groupes_variables[[groupe]], drop = FALSE]
+  X_f_groupes[[groupe]] <- X_f[, groupes_variables[[groupe]], drop = FALSE]
+}
+
+# Vérification : Afficher les dimensions d'un groupe, par exemple "tete_cou"
+#print("Dimensions du groupe 'tete' pour les hommes :")
+#print(dim(X_m_groupes$tete))
+
+#print("Dimensions du groupe 'tete' pour les femmes :")
+#print(dim(X_f_groupes$tete))
+```
+
+Ensuite nous faisons une analyse des corrélations par groupe. L'objectif est de calculer les corrélations entre chaque variable d'un groupe et le poids (Y_m pour les hommes et Y_f pour les femmes). Puis on ne conserve uniquement que les variables ayant une corrélation absolue supérieure à 0.7 avec le poids.
+```{r echo=TRUE, message=FALSE, warning=FALSE, results = 'hide'}
+# Fonction pour filtrer les variables par corrélation
+filtrer_variables_par_correlation <- function(data_group, target, seuil = 0.7) {
+  cor_vals <- sapply(data_group, function(var) cor(var, target))
+  var_conservees <- names(cor_vals[abs(cor_vals) > seuil])
+  return(list(variables = var_conservees, correlations = cor_vals[var_conservees]))
+}
+
+# Appliquer la fonction pour chaque groupe et stocker les résultats
+correlations_m <- list()
+correlations_f <- list()
+variables_conservees_m <- list()
+variables_conservees_f <- list()
+
+for (groupe in names(groupes_variables)) {
+  # Hommes
+  result_m <- filtrer_variables_par_correlation(X_m_groupes[[groupe]], Y_m, seuil = 0.7)
+  correlations_m[[groupe]] <- result_m$correlations
+  variables_conservees_m[[groupe]] <- result_m$variables
+  
+  # Femmes
+  result_f <- filtrer_variables_par_correlation(X_f_groupes[[groupe]], Y_f, seuil = 0.7)
+  correlations_f[[groupe]] <- result_f$correlations
+  variables_conservees_f[[groupe]] <- result_f$variables
+}
+
+# Vérification des résultats
+print("Variables conservées pour les hommes par groupe :")
+print(variables_conservees_m)
+
+print("Variables conservées pour les femmes par groupe :")
+print(variables_conservees_f)
+```
+
+Création des tableaux des variables conservées par groupes pour les hommes et pour les femmes
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Variables pour les hommes
+variables_conservees_h <- list(
+  main = character(0),
+  pied = c("anklecircumference", "heelanklecircumference"),
+  tete = c("neckcircumference", "neckcircumferencebase"),
+  bras = c("wristcircumference", "bicepscircumferenceflexed", "forearmcircumferenceflexed"),
+  tronc = c("buttockcircumference", "chestcircumference", "shouldercircumference", 
+            "waistcircumference", "verticaltrunkcircumferenceusa", "waistdepth", 
+            "chestdepth", "crotchlengthomphalion", "abdominalextensiondepthsitting", 
+            "bideltoidbreadth", "forearmforearmbreadth", "hipbreadthsitting", 
+            "chestbreadth", "hipbreadth", "waistbreadth", "buttockdepth"),
+  jambe = c("thighclearance", "calfcircumference", "lowerthighcircumference", "thighcircumference"),
+  stature = character(0)
+)
+
+# Variables pour les femmes
+variables_conservees_f <- list(
+  main = character(0),
+  pied = character(0),
+  tete = c("neckcircumference", "neckcircumferencebase"),
+  bras = c("wristcircumference", "bicepscircumferenceflexed", "forearmcircumferenceflexed"),
+  tronc = c("buttockcircumference", "chestcircumference", "shouldercircumference", 
+            "waistcircumference", "verticaltrunkcircumferenceusa", "waistdepth", 
+            "chestdepth", "abdominalextensiondepthsitting", "bideltoidbreadth", 
+            "forearmforearmbreadth", "hipbreadthsitting", "chestbreadth", 
+            "hipbreadth", "waistbreadth", "buttockdepth"),
+  jambe = c("buttockkneelength", "thighclearance", "calfcircumference", 
+            "lowerthighcircumference", "thighcircumference"),
+  stature = character(0)
+)
+
+# Fonction pour créer le tableau
+create_table <- function(variables) {
+  # Trouver la longueur maximale des catégories
+  max_length <- max(sapply(variables, length))
+  
+  # Compléter les catégories plus petites avec des chaînes vides
+  variables_padded <- lapply(variables, function(x) {
+    length(x) <- max_length
+    x[is.na(x)] <- ""  # Remplacer les NAs par des chaînes vides
+    return(x)
+  })
+  
+  # Convertir la liste en un data.frame
+  df <- as.data.frame(variables_padded)
+  
+  return(df)
+}
+
+# Créer les tableaux pour hommes et femmes
+table_hommes <- create_table(variables_conservees_h)
+table_femmes <- create_table(variables_conservees_f)
+
+# Afficher les tableaux
+#library(knitr)
+#cat("Tableau pour les hommes :\n")
+#kable(table_hommes, align = rep("l", ncol(table_hommes)), col.names = names(table_hommes))
+
+#cat("Tableau pour les femmes :\n")
+#kable(table_femmes, align = rep("l", ncol(table_femmes)), col.names = names(table_femmes))
+
+# Affichage du tableau sous forme propre avec knitr::kable
+library(kableExtra)
+
+kable(table_hommes, caption = "Tableau variables conservées pour les hommes") %>%
+  kable_styling(full_width = F, position = "center", bootstrap_options = c("striped", "hover", "condensed"))
+
+kable(table_femmes, caption = "Tableau variables conservées pour les femmes") %>%
+  kable_styling(full_width = F, position = "center", bootstrap_options = c("striped", "hover", "condensed"))
+```
+
+
+```{r include=FALSE}
+#Code pour la combinaison des variables, ici cela permet d'avoir toutes les variables de chaque groupes par sexe.
+# Extraire les variables conservées
+variables_finales_m <- unique(unlist(variables_conservees_m))
+variables_finales_f <- unique(unlist(variables_conservees_f))
+
+# Créer des sous-ensembles avec ces variables
+X_m_reduit <- X_m[, variables_finales_m, drop = FALSE]
+X_f_reduit <- X_f[, variables_finales_f, drop = FALSE]
+
+# Ajouter la colonne poids pour les modèles
+data_m <- cbind(X_m_reduit, Poids = Y_m)
+data_f <- cbind(X_f_reduit, Poids = Y_f)
+```
+
+**Hommes - Modèle avec sélection pas à pas (stepwise)**
+```{r echo=TRUE, message=FALSE, warning=FALSE, results = 'hide'}
+# Créer un modèle initial (modèle vide) et un modèle complet
+model_vide_m <- lm(Poids ~ 1, data = data_m) # Modèle vide (intercept seul)
+model_complet_m <- lm(Poids ~ ., data = data_m) # Modèle complet avec toutes les variables sélectionnées
+
+# Sélection pas à pas (bidirectionnelle) basée sur AIC
+model_stepwise_m <- step(model_vide_m, 
+                         scope = list(lower = model_vide_m, upper = model_complet_m), 
+                         direction = "both", trace = TRUE)
+
+# Résumé du modèle final sélectionné
+summary(model_stepwise_m)
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Charger les packages nécessaires
+library(broom)
+
+# Résumé du modèle
+summary_model1_m <- summary(model_stepwise_m)
+
+# Extraire les coefficients en un tableau
+coeff_table1_m <- tidy(model_stepwise_m)
+
+# Ajouter une colonne pour la signification statistique
+coeff_table1_m$Significance <- ifelse(coeff_table1_m$p.value < 0.001, "***",
+                            ifelse(coeff_table1_m$p.value < 0.01, "**",
+                            ifelse(coeff_table1_m$p.value < 0.05, "*", 
+                            ifelse(coeff_table1_m$p.value < 0.1, ".", " "))))
+
+# Extraire les statistiques globales du modèle
+model_stats1_m <- data.frame(
+  Metric = c("Residual Standard Error", "R-squared", "Adjusted R-squared", "F-statistic", "Degrees of Freedom"),
+  Value = c(summary_model1_m$sigma,
+            summary_model1_m$r.squared,
+            summary_model1_m$adj.r.squared,
+            summary_model1_m$fstatistic[1],
+            summary_model1_m$df[2])
+)
+
+# Afficher le tableau des coefficients
+print("Tableau des coefficients du modèle :")
+coeff_table1_m
+
+# Afficher les statistiques globales du modèle
+print("Statistiques globales du modèle :")
+model_stats1_m
+```
+
+On remarque que la variables "bideltoidbredth" n'est pas significative alors nous ne la gardons pas donc voici notre modèle final pour les hommes :
+```{r echo=TRUE, message=FALSE, warning=FALSE, results = 'hide'}
+# Retirer la variable "bideltoidbreadth" du modèle final
+model_final_m <- update(model_stepwise_m, . ~ . - bideltoidbreadth)
+
+# Résumé du modèle ajusté sans la variable
+summary(model_final_m)
+```
+
+Tableau explicatif du modèle final pour les hommes
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Charger les packages nécessaires
+library(broom)
+
+# Résumé du modèle
+summary_model_m <- summary(model_final_m)
+
+# Extraire les coefficients en un tableau
+coeff_table_m <- tidy(model_final_m)
+
+# Ajouter une colonne pour la signification statistique
+coeff_table_m$Significance <- ifelse(coeff_table_m$p.value < 0.001, "***",
+                            ifelse(coeff_table_m$p.value < 0.01, "**",
+                            ifelse(coeff_table_m$p.value < 0.05, "*", 
+                            ifelse(coeff_table_m$p.value < 0.1, ".", " "))))
+
+# Extraire les statistiques globales du modèle
+model_stats_m <- data.frame(
+  Metric = c("Residual Standard Error", "R-squared", "Adjusted R-squared", "F-statistic", "Degrees of Freedom"),
+  Value = c(summary_model_m$sigma,
+            summary_model_m$r.squared,
+            summary_model_m$adj.r.squared,
+            summary_model_m$fstatistic[1],
+            summary_model_m$df[2])
+)
+
+# Afficher le tableau des coefficients
+print("Tableau des coefficients du modèle final pour les hommes :")
+coeff_table_m
+
+# Afficher les statistiques globales du modèle
+print("Statistiques globales du modèle final pour les hommes :")
+model_stats_m
+```
+Notre modèle explique 97,83% du poids chez les hommes grâce aux différentes variables présentes dans celui-ci.
+
+Ainsi, nous avons le tableau de varibles des hommes avec leurs groupes suivant :
+```{r echo=FALSE}
+# Création d'un tableau des variables avec les groupes associés
+variables_groupes_m <- data.frame(
+  variables = c("buttockcircumference", "chestcircumference", "heelanklecircumference", 
+               "verticaltrunkcircumferenceusa", "forearmcircumferenceflexed", "waistdepth",
+               "thighcircumference", "shouldercircumference", "calfcircumference", 
+               "lowerthighcircumference", "waistcircumference", "chestdepth", 
+               "thighclearance", "buttockdepth", "neckcircumferencebase", 
+               "hipbreadthsitting", "bicepscircumferenceflexed", "chestbreadth", 
+               "hipbreadth", "wristcircumference"),
+
+  groupes = c("Tronc", "Tronc", "Pied", "Tronc", "Bras", "Tronc", 
+             "Jambe", "Tronc", "Jambe", "Jambe", "Tronc", "Tronc", 
+             "Jambe", "Tronc", "Tête", "Tronc", "Bras", "Tronc", 
+             "Tronc", "Bras")
+)
+
+# Afficher le tableau
+variables_groupes_m
+
+# Compter les variables par groupe :
+table(variables_groupes_m$groupes)
+```
+Ainsi, on observe que les variables du groupe Tronc sont les plus nombreuses, avec 11 variables, ce qui suggère qu'elles jouent un rôle majeur dans l'explication du poids des individus. Le groupe Jambe suit avec 4 variables, tandis que le groupe Bras en compte 2. Enfin, les groupes Pied et Tête ne sont représentés que par 1 variable chacun. Cette répartition met en évidence l'importance prédominante des mesures liées au tronc dans la variation du poids corporel chez les hommes.
+
+Calcul du Cp de Mallows pour estimer le modèle final des hommes
+```{r}
+# Modèle pour les hommes
+# Calculer sigma^2 (variance des erreurs du modèle homme)
+sigma2 <- summary(model_final_m)$sigma^2
+
+# Fonction pour calculer le Cp de Mallows
+calc_cp <- function(model, sigma2, n) {
+  RSS <- sum(resid(model)^2)  # Somme des carrés des résidus
+  p <- length(coef(model)) - 1  # Nombre de variables explicatives (sans l'intercept)
+  Cp <- RSS / sigma2 - n + 2 * (p + 1)
+  return(Cp)
+}
+
+n <- nrow(X_m)  # Taille de l'échantillon
+cp_value_m <- calc_cp(model_final_m, sigma2, n)
+cp_value_m
+```
+Le Cp est exactement égal à m+1 avec m le nombre de variables.
+Cela suggère que le modèle est optimal : il inclut un bon nombre de variables pour expliquer le poids sans surajustement ni variables inutiles.
+
+Calcul de l'écart quadratique moyen (RMSE)
+```{r}
+rmse_m <- sqrt(mean(residuals(model_final_m)^2))
+rmse_m
+```
+
+**Femmes - Modèle avec sélection pas à pas (stepwise)**
+```{r echo=TRUE, message=FALSE, warning=FALSE, results = 'hide'}
+# Modèle vide et modèle complet
+model_vide_f <- lm(Poids ~ 1, data = data_f) # Modèle vide (intercept seul)
+model_complet_f <- lm(Poids ~ ., data = data_f) # Modèle complet avec toutes les variables sélectionnées
+
+# Sélection pas à pas (bidirectionnelle) basée sur AIC
+model_stepwise_f <- step(model_vide_f, 
+                         scope = list(lower = model_vide_f, upper = model_complet_f), 
+                         direction = "both", trace = TRUE)
+
+# Résumé du modèle final sélectionné
+summary(model_stepwise_f)
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Charger les packages nécessaires
+library(broom)
+
+# Résumé du modèle
+summary_model1_f <- summary(model_stepwise_f)
+
+# Extraire les coefficients en un tableau
+coeff_table1_f <- tidy(model_stepwise_f)
+
+# Ajouter une colonne pour la signification statistique
+coeff_table1_f$Significance <- ifelse(coeff_table1_f$p.value < 0.001, "***",
+                            ifelse(coeff_table1_f$p.value < 0.01, "**",
+                            ifelse(coeff_table1_f$p.value < 0.05, "*", 
+                            ifelse(coeff_table1_f$p.value < 0.1, ".", " "))))
+
+# Extraire les statistiques globales du modèle
+model_stats1_f <- data.frame(
+  Metric = c("Residual Standard Error", "R-squared", "Adjusted R-squared", "F-statistic", "Degrees of Freedom"),
+  Value = c(summary_model1_f$sigma,
+            summary_model1_f$r.squared,
+            summary_model1_f$adj.r.squared,
+            summary_model1_f$fstatistic[1],
+            summary_model1_f$df[2])
+)
+
+# Afficher le tableau des coefficients
+print("Tableau des coefficients du modèle :")
+coeff_table1_f
+
+# Afficher les statistiques globales du modèle
+print("Statistiques globales du modèle :")
+model_stats1_f
+```
+
+
+On observe que les variables "thighcircumference", "forearmforearmbreadth" et "waistcircumference" ne sont pas significatives (on prend un seuil < 0.01 pour la significativité). Nous allons donc les enlever pour créer le nouveau modèle.
+```{r echo=TRUE, message=FALSE, warning=FALSE, results = 'hide'}
+# Retirer les variables  du modèle final
+model_stepwise2_f <- update(model_stepwise_f, . ~ . - thighcircumference-forearmforearmbreadth-waistcircumference)
+
+# Résumé du modèle ajusté sans la variable
+summary(model_stepwise2_f)
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Charger les packages nécessaires
+library(broom)
+
+# Résumé du modèle
+summary_model2_f <- summary(model_stepwise2_f)
+
+# Extraire les coefficients en un tableau
+coeff_table2_f <- tidy(model_stepwise2_f)
+
+# Ajouter une colonne pour la signification statistique
+coeff_table2_f$Significance <- ifelse(coeff_table2_f$p.value < 0.001, "***",
+                            ifelse(coeff_table2_f$p.value < 0.01, "**",
+                            ifelse(coeff_table2_f$p.value < 0.05, "*", 
+                            ifelse(coeff_table2_f$p.value < 0.1, ".", " "))))
+
+# Extraire les statistiques globales du modèle
+model_stats2_f <- data.frame(
+  Metric = c("Residual Standard Error", "R-squared", "Adjusted R-squared", "F-statistic", "Degrees of Freedom"),
+  Value = c(summary_model2_f$sigma,
+            summary_model2_f$r.squared,
+            summary_model2_f$adj.r.squared,
+            summary_model2_f$fstatistic[1],
+            summary_model2_f$df[2])
+)
+
+# Afficher le tableau des coefficients
+print("Tableau des coefficients du modèle :")
+coeff_table2_f
+
+# Afficher les statistiques globales du modèle
+print("Statistiques globales du modèle :")
+model_stats2_f
+```
+
+
+On remarque avec ce nouveau modèle que la variable buttockdepth n'est plus significative (car nous prenons un seuil < 0.01).
+Alors nous la supprimons, ce qui nous donne le modèle final
+```{r echo=TRUE, message=FALSE, warning=FALSE, results = 'hide'}
+# Retirer les variables  du modèle final
+model_final_f <- update(model_stepwise2_f, . ~ . - buttockdepth)
+
+# Résumé du modèle ajusté sans la variable
+summary(model_final_f)
+```
+
+Tableau explicatif du modèle final pour les femmes
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Charger les packages nécessaires
+library(broom)
+
+# Résumé du modèle
+summary_model_f <- summary(model_final_f)
+
+# Extraire les coefficients en un tableau
+coeff_table_f <- tidy(model_final_f)
+
+# Ajouter une colonne pour la signification statistique
+coeff_table_f$Significance <- ifelse(coeff_table_f$p.value < 0.001, "***",
+                            ifelse(coeff_table_f$p.value < 0.01, "**",
+                            ifelse(coeff_table_f$p.value < 0.05, "*", 
+                            ifelse(coeff_table_f$p.value < 0.1, ".", " "))))
+
+# Extraire les statistiques globales du modèle
+model_stats_f <- data.frame(
+  Metric = c("Residual Standard Error", "R-squared", "Adjusted R-squared", "F-statistic", "Degrees of Freedom"),
+  Value = c(summary_model_f$sigma,
+            summary_model_f$r.squared,
+            summary_model_f$adj.r.squared,
+            summary_model_f$fstatistic[1],
+            summary_model_f$df[2])
+)
+
+# Afficher le tableau des coefficients
+print("Tableau des coefficients du modèle final pour les femmes :")
+coeff_table_f
+
+# Afficher les statistiques globales du modèle
+print("Statistiques globales du modèle final pour les femmes :")
+model_stats_f
+```
+Notre modèle explique 98,21% du poids chez les femmes grâce aux différentes variables présentes dans celui-ci.
+
+
+Ainsi, nous avons le tableau des variables des femmes avec leurs groupes suivant  :
+```{r echo=FALSE}
+# Création d'un tableau des variables avec les groupes associés
+variables_groupes_f <- data.frame(
+  variables = c("buttockcircumference", "shouldercircumference", "verticaltrunkcircumferenceusa",
+               "bicepscircumferenceflexed", "buttockkneelength", "calfcircumference", 
+               "chestcircumference", "waistdepth", "lowerthighcircumference", 
+               "neckcircumference", "waistbreadth", "thighclearance", 
+               "wristcircumference", "hipbreadthsitting", "neckcircumferencebase",
+               "bideltoidbreadth", "chestdepth", "chestbreadth"),
+  groupes = c("Tronc", "Tronc", "Tronc",   
+             "Bras", "Jambe", "Jambe",    
+             "Tronc", "Tronc", "Jambe",   
+             "Tête", "Tronc", "Jambe",    
+             "Bras", "Tronc", "Tronc",    
+             "Tronc", "Tronc", "Tronc")                     
+)
+
+# Affichage du tableau
+variables_groupes_f
+
+# Compter les variables par groupe :
+table(variables_groupes_f$groupes)
+```
+
+On observe que les variables du groupe Tronc sont les plus nombreuses, avec un total de 11 variables, ce qui indique une forte contribution des mesures liées au tronc dans le modèle. Ensuite, le groupe Jambe comprend 4 variables, suivi par le groupe Bras avec 2 variables. Enfin, le groupe Tête est représenté par une seule variable. Cette répartition montre que les caractéristiques du tronc dominent l'explication du poids, tandis que les autres groupes y contribuent de manière plus marginale.
+
+
+Calcul du Cp de Mallows pour estimer le modèle final des femmes
+```{r}
+# Modèle pour les femmes
+# Calculer sigma^2 (variance des erreurs du modèle homme)
+sigma2 <- summary(model_final_f)$sigma^2
+
+# Fonction pour calculer le Cp de Mallows
+calc_cp <- function(model, sigma2, n) {
+  RSS <- sum(resid(model)^2)  # Somme des carrés des résidus
+  p <- length(coef(model)) - 1  # Nombre de variables explicatives (sans l'intercept)
+  Cp <- RSS / sigma2 - n + 2 * (p + 1)
+  return(Cp)
+}
+
+n <- nrow(X_f)  # Taille de l'échantillon
+cp_value_f <- calc_cp(model_final_f, sigma2, n)
+cp_value_f
+```
+Le Cp est exactement égal à m+1 avec m le nombre de variables.
+Cela suggère que le modèle est optimal : il inclut un bon nombre de variables pour expliquer le poids sans surajustement ni variables inutiles.
+
+Calcul de l'écart quadratique moyen (RMSE)
+```{r}
+rmse_f <- sqrt(mean(residuals(model_final_f)^2))
+rmse_f
+```
+
+**Graphiques en barres : Importance des variables dans le modèle final**
+
+Pour mesurer l'importance des variables, on peut utiliser les valeurs absolues des coefficients du modèle final.
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Extraire les coefficients absolus du modèle final pour les hommes
+coeff_hommes <- summary(model_final_m)$coefficients
+coeff_hommes_df <- as.data.frame(coeff_hommes)
+coeff_hommes_df$Variable <- rownames(coeff_hommes_df)
+coeff_hommes_df <- coeff_hommes_df[-1, ]  # Enlever l'intercept
+coeff_hommes_df$Importance <- abs(coeff_hommes_df$Estimate)
+
+# Créer un graphique en barres pour les hommes
+ggplot(coeff_hommes_df, aes(x = reorder(Variable, Importance), y = Importance)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  coord_flip() +
+  labs(title = "Importance des variables dans le modèle (Hommes)",
+       x = "Variables", y = "Importance absolue des coefficients") +
+  theme_minimal()
+
+# Répéter pour les femmes (en remplaçant `model_stepwise_f` par le modèle des femmes)
+coeff_femmes <- summary(model_final_f)$coefficients
+coeff_femmes_df <- as.data.frame(coeff_femmes)
+coeff_femmes_df$Variable <- rownames(coeff_femmes_df)
+coeff_femmes_df <- coeff_femmes_df[-1, ]  # Enlever l'intercept
+coeff_femmes_df$Importance <- abs(coeff_femmes_df$Estimate)
+
+ggplot(coeff_femmes_df, aes(x = reorder(Variable, Importance), y = Importance)) +
+  geom_bar(stat = "identity", fill = "salmon") +
+  coord_flip() +
+  labs(title = "Importance des variables dans le modèle (Femmes)",
+       x = "Variables", y = "Importance absolue des coefficients") +
+  theme_minimal()
+
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Création d'un tableau comparatif
+comparaison_modele <- data.frame(
+  Critères = c("Variable dominante", 
+               "Importance des jambes", 
+               "Importance du tronc", 
+               "Importance des bras", 
+               "Répartition des variables"),
+  Hommes = c("heelanklecircumference", 
+             "Très marquée (heelankle, etc.)", 
+             "Très présente", 
+             "Moins marquée", 
+             "Dominée par les jambes et tronc"),
+  Femmes = c("wristcircumference", 
+             "Forte mais équilibrée", 
+             "Relativement présente", 
+             "Plus marquée (wristcircumference)", 
+             "Plus équilibrée (tronc, bras, jambes)")
+)
+
+# Affichage du tableau sous forme propre avec knitr::kable
+library(kableExtra)
+
+kable(comparaison_modele, caption = "Comparaison des modèles Hommes vs Femmes") %>%
+  kable_styling(full_width = F, position = "center", bootstrap_options = c("striped", "hover", "condensed"))
+
+```
+**Interprétation des variables sélectionnées**
+
+- Hommes :
+  - Les variables du groupe tronc jouent un rôle prépondérant avec 11 variables retenues, suivies par le groupe jambes (4 variables) et le groupe bras (2 variables). Les groupes pieds et tête sont moins représentés avec une seule variable chacun. Parmi les variables les plus influentes, on retrouve notamment :
+    - heelanklecircumference (circonférence cheville-talon)
+    - thighclearance (dégagement des cuisses)
+    - waistdepth (profondeur de la taille)
+
+Cette distribution souligne l'importance des mesures du tronc et des jambes dans l'explication du poids corporel chez les hommes.
+
+- Femmes :
+  - Bien que les variables du groupe tronc soient également dominantes (11 variables), le groupe bras joue un rôle plus significatif qu'il ne le fait chez les hommes. Les variables les plus influentes incluent :
+    - wristcircumference (circonférence du poignet)
+    - buttockkneelength (longueur fessier-genou)
+    - calfcircumference (circonférence du mollet)
+
+Cette répartition indique une contribution plus équilibrée entre les segments corporels pour les femmes, avec une importance particulière des membres supérieurs.
+
+**Comparaison hommes/femmes**
+
+Les deux modèles présentent des similitudes dans les variables influentes, notamment celles liées au tronc et aux jambes. Cependant, des différences notables apparaissent :
+
+- Chez les hommes, les jambes dominent après le tronc.
+- Chez les femmes, les membres supérieurs, en particulier les poignets et les biceps, jouent un rôle plus important.
+
+Ces observations pourraient être expliquées par des différences morphologiques ou fonctionnelles entre les sexes.
+
+**Comparaison des modèles hommes vs femmes : Tableau récapitulatif**
+
+On va créer un tableau comparatif pour montrer les différences dans les variables sélectionnées, les coefficients et les R² de chaque modèle.
+```{r echo=FALSE}
+# Créer un tableau récapitulatif pour les hommes
+model_hommes_summary <- data.frame(
+  Variable = rownames(coeff_hommes_df),
+  Coefficient_Hommes = coeff_hommes_df$Estimate,
+  Importance_Hommes = coeff_hommes_df$Importance
+)
+
+# Créer un tableau récapitulatif pour les femmes
+model_femmes_summary <- data.frame(
+  Variable = rownames(coeff_femmes_df),
+  Coefficient_Femmes = coeff_femmes_df$Estimate,
+  Importance_Femmes = coeff_femmes_df$Importance
+)
+
+# Fusionner les deux tableaux pour comparaison
+comparison_table <- merge(model_hommes_summary, model_femmes_summary, by = "Variable", all = TRUE)
+
+# Ajouter les statistiques globales du modèle
+global_stats <- data.frame(
+  Metric = c("R-squared", "Adjusted R-squared", "Residual Standard Error"),
+  Hommes = c(summary(model_final_m)$r.squared, 
+             summary(model_final_m)$adj.r.squared,
+             summary(model_final_m)$sigma),
+  Femmes = c(summary(model_final_f)$r.squared, 
+             summary(model_final_f)$adj.r.squared,
+             summary(model_final_f)$sigma)
+)
+
+print("Statistiques globales des modèles :")
+global_stats
+```
+**Performance des modèles**
+
+- Le R-squared mesure la proportion de la variance expliquée par le modèle. Il est compris entre 0 et 1, où une valeur proche de 1 indique un excellent ajustement du modèle.
+
+  - Hommes : R² = 0.9783 : Cela signifie que 97.83 % de la variance du poids chez les hommes est expliquée par les variables incluses dans le modèle.
+  - Femmes : R² = 0.9821 : Ici, 98.21 % de la variance du poids chez les femmes est expliquée par les variables du modèle.
+
+Le modèle pour les femmes a un R² légèrement supérieur, indiquant qu'il explique un peu mieux les variations du poids par rapport au modèle des hommes.
+
+- L'Adjusted R-squared corrige le R² pour tenir compte du nombre de variables incluses dans le modèle. Cela évite une surévaluation lorsque des variables supplémentaires sont ajoutées.
+
+  - Hommes : R² ajusté = 0.9782
+  - Femmes : R² ajusté = 0.9820
+
+Le R² ajusté suit la même tendance que le R² : le modèle pour les femmes reste légèrement meilleur, ce qui indique qu'il est plus performant, même en tenant compte du nombre de variables incluses
+
+- L'erreur standard des résidus donne une idée de l'écart-type des résidus (ou erreurs de prédiction) du modèle. Une valeur plus faible indique des prédictions plus précises.
+
+  - Hommes : Erreur = 2.10
+  - Femmes : Erreur = 1.47
+
+L'erreur standard des résidus pour les femmes est significativement plus faible (1.47 contre 2.10 pour les hommes). Cela signifie que le modèle des femmes produit des prédictions plus précises que celui des hommes.
+
+Les métriques montrent que le modèle pour les femmes est légèrement supérieur à celui des hommes. Cela suggère que les variables incluses dans le modèle expliquent mieux les variations du poids chez les femmes que chez les hommes. Mais cela reste très léger.
+
+<span style="font-size:20px;">**Conclusion**</span>
+
+Ce projet a permis d’identifier des modèles linéaires précis pour expliquer le poids des individus en fonction de variables morphologiques. Les modèles obtenus offrent une interprétabilité claire grâce au regroupement des variables par partie du corps. Les performances des modèles sont excellentes, avec un léger avantage pour celui des femmes.
+
+Enfin, ces résultats mettent en évidence l'importance des mesures du tronc dans l'explication du poids, tout en soulignant des contributions différenciées des jambes et des membres supérieurs selon le sexe. Cette étude pourrait être approfondie en intégrant d'autres méthodes de modélisation ou en analysant d'autres variables d'intérêt telles que la taille corporelle.

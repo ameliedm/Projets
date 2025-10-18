@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    
+        <script>
+            L_NO_TOUCH = false;
+            L_DISABLE_3D = false;
+        </script>
+    
+    <style>html, body {width: 100%;height: 100%;margin: 0;padding: 0;}</style>
+    <style>#map {position:absolute;top:0;bottom:0;right:0;left:0;}</style>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_00e5902c76a6cd3889688d63e42096fb {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+        
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.1.0/leaflet.markercluster.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.1.0/MarkerCluster.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.1.0/MarkerCluster.Default.css"/>
+</head>
+<body>
+    
+    
+            <div class="folium-map" id="map_00e5902c76a6cd3889688d63e42096fb" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_00e5902c76a6cd3889688d63e42096fb = L.map(
+                "map_00e5902c76a6cd3889688d63e42096fb",
+                {
+                    center: [52.0, 10.0],
+                    crs: L.CRS.EPSG3857,
+                    zoom: 4,
+                    zoomControl: true,
+                    preferCanvas: false,
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_6cc9ce445ec16582cc50bb23a021cb13 = L.tileLayer(
+                "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {"attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors", "detectRetina": false, "maxNativeZoom": 19, "maxZoom": 19, "minZoom": 0, "noWrap": false, "opacity": 1, "subdomains": "abc", "tms": false}
+            );
+        
+    
+            tile_layer_6cc9ce445ec16582cc50bb23a021cb13.addTo(map_00e5902c76a6cd3889688d63e42096fb);
+        
+    
+            var marker_cluster_49a4ec40ceb6f9bd36ab342b4f68416c = L.markerClusterGroup(
+                {}
+            );
+        
+    
+            var marker_87c866a68b76c739b831137893b88bb5 = L.marker(
+                [47.5162, 14.5501],
+                {}
+            ).addTo(marker_cluster_49a4ec40ceb6f9bd36ab342b4f68416c);
+        
+    
+            var icon_8f73ee1da41b33284bb9ceca345fe9b6 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "blue", "prefix": "glyphicon"}
+            );
+            marker_87c866a68b76c739b831137893b88bb5.setIcon(icon_8f73ee1da41b33284bb9ceca345fe9b6);
+        
+    
+        var popup_08b8cbe4ae24e4909735e2656de579b8 = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_2c16f4d24e6302a7ff432e12407e88cb = $(`<div id="html_2c16f4d24e6302a7ff432e12407e88cb" style="width: 100.0%; height: 100.0%;"><b>Austria</b><br>PIB: 435,049,316,955.74 USD<br>Taux de chômage: 5.20%</div>`)[0];
+                popup_08b8cbe4ae24e4909735e2656de579b8.setContent(html_2c16f4d24e6302a7ff432e12407e88cb);
+            
+        
+
+        marker_87c866a68b76c739b831137893b88bb5.bindPopup(popup_08b8cbe4ae24e4909735e2656de579b8)
+        ;
+
+        
+    
+    
+            var marker_5ea6f041914ff5a82bfb53be89d7c155 = L.marker(
+                [50.8503, 4.3517],
+                {}
+            ).addTo(marker_cluster_49a4ec40ceb6f9bd36ab342b4f68416c);
+        
+    
+            var icon_465073fd9e5e4f260ccfaa74c98afcf3 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "blue", "prefix": "glyphicon"}
+            );
+            marker_5ea6f041914ff5a82bfb53be89d7c155.setIcon(icon_465073fd9e5e4f260ccfaa74c98afcf3);
+        
+    
+        var popup_958574b31f8bd1256a61ced8bd8d311e = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_a158a537f739df2ea989bdce49e5a005 = $(`<div id="html_a158a537f739df2ea989bdce49e5a005" style="width: 100.0%; height: 100.0%;"><b>Belgium</b><br>PIB: 526,021,513,474.24 USD<br>Taux de chômage: 5.55%</div>`)[0];
+                popup_958574b31f8bd1256a61ced8bd8d311e.setContent(html_a158a537f739df2ea989bdce49e5a005);
+            
+        
+
+        marker_5ea6f041914ff5a82bfb53be89d7c155.bindPopup(popup_958574b31f8bd1256a61ced8bd8d311e)
+        ;
+
+        
+    
+    
+            var marker_e955de108945caaeab0186f01321d81a = L.marker(
+                [42.7339, 25.4858],
+                {}
+            ).addTo(marker_cluster_49a4ec40ceb6f9bd36ab342b4f68416c);
+        
+    
+            var icon_dd4b83a15cdbb90bbc0ad646d03211cb = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "blue", "prefix": "glyphicon"}
+            );
+            marker_e955de108945caaeab0186f01321d81a.setIcon(icon_dd4b83a15cdbb90bbc0ad646d03211cb);
+        
+    
+        var popup_3081b75d54f28236da289b1249a43aae = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_d00f60aef59f8d9ab2bfe35cbf197ece = $(`<div id="html_d00f60aef59f8d9ab2bfe35cbf197ece" style="width: 100.0%; height: 100.0%;"><b>Bulgaria</b><br>PIB: 70,368,758,395.14 USD<br>Taux de chômage: 5.12%</div>`)[0];
+                popup_3081b75d54f28236da289b1249a43aae.setContent(html_d00f60aef59f8d9ab2bfe35cbf197ece);
+            
+        
+
+        marker_e955de108945caaeab0186f01321d81a.bindPopup(popup_3081b75d54f28236da289b1249a43aae)
+        ;
+
+        
+    
+    
+            var marker_0e407573cca62935099b3d528347deb1 = L.marker(
+                [45.1, 15.2],
+                {}
+            ).addTo(marker_cluster_49a4ec40ceb6f9bd36ab342b4f68416c);
+        
+    
+            var icon_4d0ea1a115e4747f4e57e79167d2ba22 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "blue", "prefix": "glyphicon"}
+            );
+            marker_0e407573cca62935099b3d528347deb1.setIcon(icon_4d0ea1a115e4747f4e57e79167d2ba22);
+        
+    
+        var popup_032a31202c1e98513208d3e5cee90134 = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_ef58eaae07ae8c6b7883109c36e0e4ad = $(`<div id="html_ef58eaae07ae8c6b7883109c36e0e4ad" style="width: 100.0%; height: 100.0%;"><b>Croatia</b><br>PIB: 58,221,300,897.88 USD<br>Taux de chômage: 7.51%</div>`)[0];
+                popup_032a31202c1e98513208d3e5cee90134.setContent(html_ef58eaae07ae8c6b7883109c36e0e4ad);
+            
+        
+
+        marker_0e407573cca62935099b3d528347deb1.bindPopup(popup_032a31202c1e98513208d3e5cee90134)
+        ;
+
+        
+    
+    
+            var marker_d0e98f6ecfffc3b14bbec1d4e2bc8809 = L.marker(
+                [35.1264, 33.4299],
+                {}
+            ).addTo(marker_cluster_49a4ec40ceb6f9bd36ab342b4f68416c);
+        
+    
+            var icon_6df089f8d2480bfaffb757bd19912452 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "blue", "prefix": "glyphicon"}
+            );
+            marker_d0e98f6ecfffc3b14bbec1d4e2bc8809.setIcon(icon_6df089f8d2480bfaffb757bd19912452);
+        
+    
+        var popup_b77627d1adb0c62d319c773a7f0b5411 = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_305e07487e00a84312e43035dcdb53b8 = $(`<div id="html_305e07487e00a84312e43035dcdb53b8" style="width: 100.0%; height: 100.0%;"><b>Cyprus</b><br>PIB: 25,227,189,744.91 USD<br>Taux de chômage: 7.75%</div>`)[0];
+                popup_b77627d1adb0c62d319c773a7f0b5411.setContent(html_305e07487e00a84312e43035dcdb53b8);
+            
+        
+
+        marker_d0e98f6ecfffc3b14bbec1d4e2bc8809.bindPopup(popup_b77627d1adb0c62d319c773a7f0b5411)
+        ;
+
+        
+    
+    
+            var marker_52ca967c802cadedafeb150917e02455 = L.marker(
+                [56.2639, 9.5018],
+                {}
+            ).addTo(marker_cluster_49a4ec40ceb6f9bd36ab342b4f68416c);
+        
+    
+            var icon_19d9a5ca85f70bd2bbb1f4cb5233df84 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "blue", "prefix": "glyphicon"}
+            );
+            marker_52ca967c802cadedafeb150917e02455.setIcon(icon_19d9a5ca85f70bd2bbb1f4cb5233df84);
+        
+    
+        var popup_c1e49e1b97b7b68db869efecff2a083f = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_508bc8f3183f6eae76853e59ff045252 = $(`<div id="html_508bc8f3183f6eae76853e59ff045252" style="width: 100.0%; height: 100.0%;"><b>Denmark</b><br>PIB: 354,762,748,338.66 USD<br>Taux de chômage: 5.64%</div>`)[0];
+                popup_c1e49e1b97b7b68db869efecff2a083f.setContent(html_508bc8f3183f6eae76853e59ff045252);
+            
+        
+
+        marker_52ca967c802cadedafeb150917e02455.bindPopup(popup_c1e49e1b97b7b68db869efecff2a083f)
+        ;
+
+        
+    
+    
+            var marker_41a94631feea01228ab214e1180e0f0b = L.marker(
+                [58.5953, 25.0136],
+                {}
+            ).addTo(marker_cluster_49a4ec40ceb6f9bd36ab342b4f68416c);
+        
+    
+            var icon_4dabcadd1ae53e3c10ecae26b09e13b4 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "blue", "prefix": "glyphicon"}
+            );
+            marker_41a94631feea01228ab214e1180e0f0b.setIcon(icon_4dabcadd1ae53e3c10ecae26b09e13b4);
+        
+    
+        var popup_7aa61a76d2d9ea9558186473990ed133 = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_bba5710ec3482a47aef0c3a538983f25 = $(`<div id="html_bba5710ec3482a47aef0c3a538983f25" style="width: 100.0%; height: 100.0%;"><b>Estonia</b><br>PIB: 31,330,419,851.15 USD<br>Taux de chômage: 6.96%</div>`)[0];
+                popup_7aa61a76d2d9ea9558186473990ed133.setContent(html_bba5710ec3482a47aef0c3a538983f25);
+            
+        
+
+        marker_41a94631feea01228ab214e1180e0f0b.bindPopup(popup_7aa61a76d2d9ea9558186473990ed133)
+        ;
+
+        
+    
+    
+            var marker_68d7e048732d0d25f321a1da32007a5b = L.marker(
+                [61.9241, 25.7482],
+                {}
+            ).addTo(marker_cluster_49a4ec40ceb6f9bd36ab342b4f68416c);
+        
+    
+            var icon_737dc04c651dbe8bc467953c0bdd5066 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "blue", "prefix": "glyphicon"}
+            );
+            marker_68d7e048732d0d25f321a1da32007a5b.setIcon(icon_737dc04c651dbe8bc467953c0bdd5066);
+        
+    
+        var popup_4ce9e73d3ff4ba3086d5069f8065f9ad = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_96265ca532e70a29b3da36ebbd30e245 = $(`<div id="html_96265ca532e70a29b3da36ebbd30e245" style="width: 100.0%; height: 100.0%;"><b>Finland</b><br>PIB: 271,886,077,382.10 USD<br>Taux de chômage: 7.76%</div>`)[0];
+                popup_4ce9e73d3ff4ba3086d5069f8065f9ad.setContent(html_96265ca532e70a29b3da36ebbd30e245);
+            
+        
+
+        marker_68d7e048732d0d25f321a1da32007a5b.bindPopup(popup_4ce9e73d3ff4ba3086d5069f8065f9ad)
+        ;
+
+        
+    
+    
+            var marker_fb4661c5df7252159fb7b0bcdcee8818 = L.marker(
+                [46.6034, 1.8883],
+                {}
+            ).addTo(marker_cluster_49a4ec40ceb6f9bd36ab342b4f68416c);
+        
+    
+            var icon_b025edc08e833147bf88164d057209f0 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "blue", "prefix": "glyphicon"}
+            );
+            marker_fb4661c5df7252159fb7b0bcdcee8818.setIcon(icon_b025edc08e833147bf88164d057209f0);
+        
+    
+        var popup_b723b1d3f8453b83b76827ff07ff2437 = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_44af2afabf1b282afeb6fb955061f815 = $(`<div id="html_44af2afabf1b282afeb6fb955061f815" style="width: 100.0%; height: 100.0%;"><b>France</b><br>PIB: 2,647,418,691,598.45 USD<br>Taux de chômage: 8.01%</div>`)[0];
+                popup_b723b1d3f8453b83b76827ff07ff2437.setContent(html_44af2afabf1b282afeb6fb955061f815);
+            
+        
+
+        marker_fb4661c5df7252159fb7b0bcdcee8818.bindPopup(popup_b723b1d3f8453b83b76827ff07ff2437)
+        ;
+
+        
+    
+    
+            var marker_ea00ad629d8630c91a4ddec71d59bde1 = L.marker(
+                [51.1657, 10.4515],
+                {}
+            ).addTo(marker_cluster_49a4ec40ceb6f9bd36ab342b4f68416c);
+        
+    
+            var icon_30a70495dc55e8cad222382c6655cffc = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "blue", "prefix": "glyphicon"}
+            );
+            marker_ea00ad629d8630c91a4ddec71d59bde1.setIcon(icon_30a70495dc55e8cad222382c6655cffc);
+        
+    
+        var popup_33c133d715175d05e4b7e55ea17100cb = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_6b8da611646647a730d11cccb91b718d = $(`<div id="html_6b8da611646647a730d11cccb91b718d" style="width: 100.0%; height: 100.0%;"><b>Germany</b><br>PIB: 3,887,727,161,914.41 USD<br>Taux de chômage: 3.86%</div>`)[0];
+                popup_33c133d715175d05e4b7e55ea17100cb.setContent(html_6b8da611646647a730d11cccb91b718d);
+            
+        
+
+        marker_ea00ad629d8630c91a4ddec71d59bde1.bindPopup(popup_33c133d715175d05e4b7e55ea17100cb)
+        ;
+
+        
+    
+    
+            var marker_cd77641cdff9a383ab22ab4e0060e4bc = L.marker(
+                [39.0742, 21.8243],
+                {}
+            ).addTo(marker_cluster_49a4ec40ceb6f9bd36ab342b4f68416c);
+        
+    
+            var icon_3854417a8407b50eea7442e743fed42c = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "blue", "prefix": "glyphicon"}
+            );
+            marker_cd77641cdff9a383ab22ab4e0060e4bc.setIcon(icon_3854417a8407b50eea7442e743fed42c);
+        
+    
+        var popup_6decce181ef2fefee9ca87e4e2fd7024 = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_4bc103adccff1610c4b3b3edeee66b8e = $(`<div id="html_4bc103adccff1610c4b3b3edeee66b8e" style="width: 100.0%; height: 100.0%;"><b>Greece</b><br>PIB: 188,480,337,285.61 USD<br>Taux de chômage: 15.90%</div>`)[0];
+                popup_6decce181ef2fefee9ca87e4e2fd7024.setContent(html_4bc103adccff1610c4b3b3edeee66b8e);
+            
+        
+
+        marker_cd77641cdff9a383ab22ab4e0060e4bc.bindPopup(popup_6decce181ef2fefee9ca87e4e2fd7024)
+        ;
+
+        
+    
+    
+            var marker_7cf9fc39a49184f9193b48f7c2b5fde6 = L.marker(
+                [47.1625, 19.5033],
+                {}
+            ).addTo(marker_cluster_49a4ec40ceb6f9bd36ab342b4f68416c);
+        
+    
+            var icon_1c7525b9df2076cf8222d06edb4a4ba0 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "blue", "prefix": "glyphicon"}
+            );
+            marker_7cf9fc39a49184f9193b48f7c2b5fde6.setIcon(icon_1c7525b9df2076cf8222d06edb4a4ba0);
+        
+    
+        var popup_4b63d46ba68d7c25ed184b3a3c37d0a8 = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_0193bef33e1dccb6874bbb05991b17b5 = $(`<div id="html_0193bef33e1dccb6874bbb05991b17b5" style="width: 100.0%; height: 100.0%;"><b>Hungary</b><br>PIB: 157,288,955,508.18 USD<br>Taux de chômage: 4.25%</div>`)[0];
+                popup_4b63d46ba68d7c25ed184b3a3c37d0a8.setContent(html_0193bef33e1dccb6874bbb05991b17b5);
+            
+        
+
+        marker_7cf9fc39a49184f9193b48f7c2b5fde6.bindPopup(popup_4b63d46ba68d7c25ed184b3a3c37d0a8)
+        ;
+
+        
+    
+    
+            var marker_7c8387ab115e236e9040ac0398044da9 = L.marker(
+                [53.1424, -7.6921],
+                {}
+            ).addTo(marker_cluster_49a4ec40ceb6f9bd36ab342b4f68416c);
+        
+    
+            var icon_b3df45c81bf132cccd7c385bf2f8b2d9 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "blue", "prefix": "glyphicon"}
+            );
+            marker_7c8387ab115e236e9040ac0398044da9.setIcon(icon_b3df45c81bf132cccd7c385bf2f8b2d9);
+        
+    
+        var popup_290273a4252af726ca66b29864dd8709 = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_cabb2f99014e972343f52cdcf5b9fdc5 = $(`<div id="html_cabb2f99014e972343f52cdcf5b9fdc5" style="width: 100.0%; height: 100.0%;"><b>Ireland</b><br>PIB: 428,608,687,830.24 USD<br>Taux de chômage: 5.62%</div>`)[0];
+                popup_290273a4252af726ca66b29864dd8709.setContent(html_cabb2f99014e972343f52cdcf5b9fdc5);
+            
+        
+
+        marker_7c8387ab115e236e9040ac0398044da9.bindPopup(popup_290273a4252af726ca66b29864dd8709)
+        ;
+
+        
+    
+    
+            var marker_43c3503a2e7a2ed75041d1217ce5e3cc = L.marker(
+                [41.8719, 12.5674],
+                {}
+            ).addTo(marker_cluster_49a4ec40ceb6f9bd36ab342b4f68416c);
+        
+    
+            var icon_adb6a5b11b1544b909df5623a1e4e7a0 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "blue", "prefix": "glyphicon"}
+            );
+            marker_43c3503a2e7a2ed75041d1217ce5e3cc.setIcon(icon_adb6a5b11b1544b909df5623a1e4e7a0);
+        
+    
+        var popup_9d96bec1f381ddcb65b6ae0353aa9264 = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_9ed8ef37e8468e6c96aa65499a6432b6 = $(`<div id="html_9ed8ef37e8468e6c96aa65499a6432b6" style="width: 100.0%; height: 100.0%;"><b>Italy</b><br>PIB: 1,897,461,635,591.91 USD<br>Taux de chômage: 9.16%</div>`)[0];
+                popup_9d96bec1f381ddcb65b6ae0353aa9264.setContent(html_9ed8ef37e8468e6c96aa65499a6432b6);
+            
+        
+
+        marker_43c3503a2e7a2ed75041d1217ce5e3cc.bindPopup(popup_9d96bec1f381ddcb65b6ae0353aa9264)
+        ;
+
+        
+    
+    
+            var marker_fcde940e5ad5d417a256b5bdfe03b9d3 = L.marker(
+                [56.8796, 24.6032],
+                {}
+            ).addTo(marker_cluster_49a4ec40ceb6f9bd36ab342b4f68416c);
+        
+    
+            var icon_820c7d15eaa4c9f21e562f590b9f3234 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "blue", "prefix": "glyphicon"}
+            );
+            marker_fcde940e5ad5d417a256b5bdfe03b9d3.setIcon(icon_820c7d15eaa4c9f21e562f590b9f3234);
+        
+    
+        var popup_cf30b61a9751fdda63b92c9970a630e5 = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_3ea57a6a2c603dba29d4dd52f9c8c3ec = $(`<div id="html_3ea57a6a2c603dba29d4dd52f9c8c3ec" style="width: 100.0%; height: 100.0%;"><b>Latvia</b><br>PIB: 34,390,910,338.96 USD<br>Taux de chômage: 8.10%</div>`)[0];
+                popup_cf30b61a9751fdda63b92c9970a630e5.setContent(html_3ea57a6a2c603dba29d4dd52f9c8c3ec);
+            
+        
+
+        marker_fcde940e5ad5d417a256b5bdfe03b9d3.bindPopup(popup_cf30b61a9751fdda63b92c9970a630e5)
+        ;
+
+        
+    
+    
+            var marker_ddbfee7f736c1aceceaf3fcfc1619ffb = L.marker(
+                [55.1694, 23.8813],
+                {}
+            ).addTo(marker_cluster_49a4ec40ceb6f9bd36ab342b4f68416c);
+        
+    
+            var icon_47daba46b10ebde56b9d70f0375f137a = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "blue", "prefix": "glyphicon"}
+            );
+            marker_ddbfee7f736c1aceceaf3fcfc1619ffb.setIcon(icon_47daba46b10ebde56b9d70f0375f137a);
+        
+    
+        var popup_ad8aa62c07addda8eed6b05fa259ea0b = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_81d5ea4d76e54bfc8950b02bc01e8cf0 = $(`<div id="html_81d5ea4d76e54bfc8950b02bc01e8cf0" style="width: 100.0%; height: 100.0%;"><b>Lithuania</b><br>PIB: 56,964,942,999.37 USD<br>Taux de chômage: 8.49%</div>`)[0];
+                popup_ad8aa62c07addda8eed6b05fa259ea0b.setContent(html_81d5ea4d76e54bfc8950b02bc01e8cf0);
+            
+        
+
+        marker_ddbfee7f736c1aceceaf3fcfc1619ffb.bindPopup(popup_ad8aa62c07addda8eed6b05fa259ea0b)
+        ;
+
+        
+    
+    
+            var marker_b6c26664ecf9e9a4d7cebfff09e05563 = L.marker(
+                [49.6117, 6.13],
+                {}
+            ).addTo(marker_cluster_49a4ec40ceb6f9bd36ab342b4f68416c);
+        
+    
+            var icon_248ae10aeca92035bae82799fa6314eb = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "blue", "prefix": "glyphicon"}
+            );
+            marker_b6c26664ecf9e9a4d7cebfff09e05563.setIcon(icon_248ae10aeca92035bae82799fa6314eb);
+        
+    
+        var popup_215071028f4b55ce41faa0fc2f01f100 = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_c09fae3e18e7a73a258d3ab8c2d0d7ad = $(`<div id="html_c09fae3e18e7a73a258d3ab8c2d0d7ad" style="width: 100.0%; height: 100.0%;"><b>Luxembourg</b><br>PIB: 73,699,366,700.21 USD<br>Taux de chômage: 6.77%</div>`)[0];
+                popup_215071028f4b55ce41faa0fc2f01f100.setContent(html_c09fae3e18e7a73a258d3ab8c2d0d7ad);
+            
+        
+
+        marker_b6c26664ecf9e9a4d7cebfff09e05563.bindPopup(popup_215071028f4b55ce41faa0fc2f01f100)
+        ;
+
+        
+    
+    
+            var marker_896ec70fe6f6a1dcdb2bd87c4850c2d8 = L.marker(
+                [35.9375, 14.3754],
+                {}
+            ).addTo(marker_cluster_49a4ec40ceb6f9bd36ab342b4f68416c);
+        
+    
+            var icon_1091b98eb4c11676c6cb78646fe9d21c = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "blue", "prefix": "glyphicon"}
+            );
+            marker_896ec70fe6f6a1dcdb2bd87c4850c2d8.setIcon(icon_1091b98eb4c11676c6cb78646fe9d21c);
+        
+    
+        var popup_1a6d3000c3eea6df3ac5097188b42fee = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_a68c4731439e6d6a8bc5052b0bb626b6 = $(`<div id="html_a68c4731439e6d6a8bc5052b0bb626b6" style="width: 100.0%; height: 100.0%;"><b>Malta</b><br>PIB: 15,249,999,048.03 USD<br>Taux de chômage: 4.36%</div>`)[0];
+                popup_1a6d3000c3eea6df3ac5097188b42fee.setContent(html_a68c4731439e6d6a8bc5052b0bb626b6);
+            
+        
+
+        marker_896ec70fe6f6a1dcdb2bd87c4850c2d8.bindPopup(popup_1a6d3000c3eea6df3ac5097188b42fee)
+        ;
+
+        
+    
+    
+            var marker_cadf5ac05d696f92448c9da1f68cc86c = L.marker(
+                [52.1326, 5.2913],
+                {}
+            ).addTo(marker_cluster_49a4ec40ceb6f9bd36ab342b4f68416c);
+        
+    
+            var icon_7d8337cdfc7d2e95f8573705ce46cc5e = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "blue", "prefix": "glyphicon"}
+            );
+            marker_cadf5ac05d696f92448c9da1f68cc86c.setIcon(icon_7d8337cdfc7d2e95f8573705ce46cc5e);
+        
+    
+        var popup_a05b3be9651ac5ab0634c5ef2c2a6d4e = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_20159c1b752c0fe1cf60b69a0107d99a = $(`<div id="html_20159c1b752c0fe1cf60b69a0107d99a" style="width: 100.0%; height: 100.0%;"><b>Netherlands</b><br>PIB: 909,793,466,661.48 USD<br>Taux de chômage: 3.82%</div>`)[0];
+                popup_a05b3be9651ac5ab0634c5ef2c2a6d4e.setContent(html_20159c1b752c0fe1cf60b69a0107d99a);
+            
+        
+
+        marker_cadf5ac05d696f92448c9da1f68cc86c.bindPopup(popup_a05b3be9651ac5ab0634c5ef2c2a6d4e)
+        ;
+
+        
+    
+    
+            var marker_a835b0ee129d289c43744e5485ca0b6b = L.marker(
+                [51.9194, 19.1451],
+                {}
+            ).addTo(marker_cluster_49a4ec40ceb6f9bd36ab342b4f68416c);
+        
+    
+            var icon_cb065b053223dd732456f1ff53ecf55a = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "blue", "prefix": "glyphicon"}
+            );
+            marker_a835b0ee129d289c43744e5485ca0b6b.setIcon(icon_cb065b053223dd732456f1ff53ecf55a);
+        
+    
+        var popup_d0826316116bce634f821081a49279da = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_37a3a2d2b0b9e78fd8183a2ea59dc1dd = $(`<div id="html_37a3a2d2b0b9e78fd8183a2ea59dc1dd" style="width: 100.0%; height: 100.0%;"><b>Poland</b><br>PIB: 599,442,732,365.37 USD<br>Taux de chômage: 3.16%</div>`)[0];
+                popup_d0826316116bce634f821081a49279da.setContent(html_37a3a2d2b0b9e78fd8183a2ea59dc1dd);
+            
+        
+
+        marker_a835b0ee129d289c43744e5485ca0b6b.bindPopup(popup_d0826316116bce634f821081a49279da)
+        ;
+
+        
+    
+    
+            var marker_75839e0cf85dfedb339bdef0c15d1a06 = L.marker(
+                [39.3999, -8.2245],
+                {}
+            ).addTo(marker_cluster_49a4ec40ceb6f9bd36ab342b4f68416c);
+        
+    
+            var icon_fc8d260542a3a91dfaf6c11e157f2246 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "blue", "prefix": "glyphicon"}
+            );
+            marker_75839e0cf85dfedb339bdef0c15d1a06.setIcon(icon_fc8d260542a3a91dfaf6c11e157f2246);
+        
+    
+        var popup_b7db18f08a4cf924d115be7804d1fe6f = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_6f3c56f36e37b44523e9e271ef5b28e6 = $(`<div id="html_6f3c56f36e37b44523e9e271ef5b28e6" style="width: 100.0%; height: 100.0%;"><b>Portugal</b><br>PIB: 229,031,860,520.78 USD<br>Taux de chômage: 6.80%</div>`)[0];
+                popup_b7db18f08a4cf924d115be7804d1fe6f.setContent(html_6f3c56f36e37b44523e9e271ef5b28e6);
+            
+        
+
+        marker_75839e0cf85dfedb339bdef0c15d1a06.bindPopup(popup_b7db18f08a4cf924d115be7804d1fe6f)
+        ;
+
+        
+    
+    
+            var marker_b44a47510dfdd03db06a923218b239a3 = L.marker(
+                [45.9432, 24.9668],
+                {}
+            ).addTo(marker_cluster_49a4ec40ceb6f9bd36ab342b4f68416c);
+        
+    
+            var icon_72ee212b6b480e7ee56a8b3dc0cdaf1c = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "blue", "prefix": "glyphicon"}
+            );
+            marker_b44a47510dfdd03db06a923218b239a3.setIcon(icon_72ee212b6b480e7ee56a8b3dc0cdaf1c);
+        
+    
+        var popup_4bbb4593974a752d9abbe3bcb8aca69d = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_8828ed6e23867101956e99ffc98d532a = $(`<div id="html_8828ed6e23867101956e99ffc98d532a" style="width: 100.0%; height: 100.0%;"><b>Romania</b><br>PIB: 251,362,514,349.70 USD<br>Taux de chômage: 5.04%</div>`)[0];
+                popup_4bbb4593974a752d9abbe3bcb8aca69d.setContent(html_8828ed6e23867101956e99ffc98d532a);
+            
+        
+
+        marker_b44a47510dfdd03db06a923218b239a3.bindPopup(popup_4bbb4593974a752d9abbe3bcb8aca69d)
+        ;
+
+        
+    
+    
+            var marker_ded9c40484c3e626a62864820fb2e0f9 = L.marker(
+                [46.1511, 14.9955],
+                {}
+            ).addTo(marker_cluster_49a4ec40ceb6f9bd36ab342b4f68416c);
+        
+    
+            var icon_ad5bcdd3b43794d2ac28b2d5e594e88a = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "blue", "prefix": "glyphicon"}
+            );
+            marker_ded9c40484c3e626a62864820fb2e0f9.setIcon(icon_ad5bcdd3b43794d2ac28b2d5e594e88a);
+        
+    
+        var popup_ec9d8c17ad1aa0123be61846621f1169 = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_d10c885f698fb807072646bbc1e87f2f = $(`<div id="html_d10c885f698fb807072646bbc1e87f2f" style="width: 100.0%; height: 100.0%;"><b>Slovenia</b><br>PIB: 53,734,526,854.23 USD<br>Taux de chômage: 4.97%</div>`)[0];
+                popup_ec9d8c17ad1aa0123be61846621f1169.setContent(html_d10c885f698fb807072646bbc1e87f2f);
+            
+        
+
+        marker_ded9c40484c3e626a62864820fb2e0f9.bindPopup(popup_ec9d8c17ad1aa0123be61846621f1169)
+        ;
+
+        
+    
+    
+            var marker_87e0e7fb0200f9141748d7fca6b58dce = L.marker(
+                [40.4637, -3.7492],
+                {}
+            ).addTo(marker_cluster_49a4ec40ceb6f9bd36ab342b4f68416c);
+        
+    
+            var icon_104e3ef82857962ab6276657e4424180 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "blue", "prefix": "glyphicon"}
+            );
+            marker_87e0e7fb0200f9141748d7fca6b58dce.setIcon(icon_104e3ef82857962ab6276657e4424180);
+        
+    
+        var popup_0e9a1fc43e4ca09014c566d957486f3a = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_a0cb155040a8457ef3b862ff8494528a = $(`<div id="html_a0cb155040a8457ef3b862ff8494528a" style="width: 100.0%; height: 100.0%;"><b>Spain</b><br>PIB: 1,278,128,867,875.49 USD<br>Taux de chômage: 15.53%</div>`)[0];
+                popup_0e9a1fc43e4ca09014c566d957486f3a.setContent(html_a0cb155040a8457ef3b862ff8494528a);
+            
+        
+
+        marker_87e0e7fb0200f9141748d7fca6b58dce.bindPopup(popup_0e9a1fc43e4ca09014c566d957486f3a)
+        ;
+
+        
+    
+    
+            var marker_ee860a801f68602ba085c515cdb9d02e = L.marker(
+                [60.1282, 18.6435],
+                {}
+            ).addTo(marker_cluster_49a4ec40ceb6f9bd36ab342b4f68416c);
+        
+    
+            var icon_53eeabac1d85e44a831d435495768053 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "blue", "prefix": "glyphicon"}
+            );
+            marker_ee860a801f68602ba085c515cdb9d02e.setIcon(icon_53eeabac1d85e44a831d435495768053);
+        
+    
+        var popup_4500e8e0dcd07159ecdc6555f0c1d102 = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_3581fe3b9aebd07268756b34758328b1 = $(`<div id="html_3581fe3b9aebd07268756b34758328b1" style="width: 100.0%; height: 100.0%;"><b>Sweden</b><br>PIB: 547,054,174,235.88 USD<br>Taux de chômage: 8.29%</div>`)[0];
+                popup_4500e8e0dcd07159ecdc6555f0c1d102.setContent(html_3581fe3b9aebd07268756b34758328b1);
+            
+        
+
+        marker_ee860a801f68602ba085c515cdb9d02e.bindPopup(popup_4500e8e0dcd07159ecdc6555f0c1d102)
+        ;
+
+        
+    
+    
+            marker_cluster_49a4ec40ceb6f9bd36ab342b4f68416c.addTo(map_00e5902c76a6cd3889688d63e42096fb);
+        
+</script>
+</html>

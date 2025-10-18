@@ -1,0 +1,540 @@
+---
+title: "projet environnemental"
+output: html_document
+author: Marwa Dades, Mathis Rita et Amélie de Maillard
+date: "2025-03-12"
+---
+
+```{r}
+# Les différentes bibliothèques nécessaires au code
+library(unmarked)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+```
+
+```{r}
+data <- read.csv2("Odonates_up_to_2023_common_species.csv")
+lieu <- read.csv2("BiodiverCite_sites_up_to_2023.csv",sep = "\t")
+surface <- read.csv2("LandUsePerBM_2023_cartoISea.csv",sep = ",")
+
+
+#noms_a_garder <- c("Lestes barbarus (Fabricius, 1798)") nous avons tout d'abord essayer le code avec celle-ci mais le modèle n'était pas interprétable donc nous testons avec une autre odonate (cf rapport)
+noms_a_garder <-c("Calopteryx virgo (Linnaeus, 1758)") #test avec autre odonate
+data_filtree <- data %>%
+  filter(Nom_Taxon_Cite == noms_a_garder) # Ne conserver que les données de notre espèce
+
+y <- as.matrix(lieu[, 5:8])
+new_y <- cbind( y[, rep(1, each = 3)],y[, rep(2:3, each = 4)], y[, rep(4, each = 3)]) # Dupliquer les colonnes des années en 4 sauf la dernière (en 3)
+
+
+new_y[new_y == 0] <- NA  # Remplacer 0 par NA
+new_y[new_y == 1] <- 0   # Remplacer 1 par 0
+
+# Ajouter la colonne "code_site"
+mat_y <- cbind(code_site = lieu$code_site, new_y)
+
+# Changer le nom de la colonne de 2 à 16
+new_names <- c("2018.1", "2018.2", "2018.3", 
+               "2019.1", "2019.2", "2019.3", "2019.4", 
+               "2022.1", "2022.2", "2022.3", "2022.4", 
+               "2023.1", "2023.2", "2023.3")
+colnames(mat_y)[2:15] <- new_names
+
+
+visite <- paste0(data_filtree$Year, ".",data_filtree$Numero_Passage) # Pour obtenir l'année avec le numéro de passage
+data_filtree <- cbind(visite, data_filtree)
+
+mat_y <- as.data.frame(mat_y)
+for(i in 1:nrow(data_filtree)) {  # Chemin de chaque ligne de data_filtree
+  # Extrait code_Maille et visite de data_filtree
+  code_site_val <- data_filtree$Code_Maille[i]
+  visite_val <- data_filtree$visite[i]
+  
+  # Trouver la ligne correspondant au code_site dans mat_y
+  row_index <- which(mat_y$code_site == code_site_val)
+  # Si la ligne correspondante existe et si la visite correspond à une colonne existante dans mat_y
+  if(length(row_index) == 1 && visite_val %in% colnames(mat_y)) {
+    mat_y[row_index, visite_val] <- 1 # Mettre 1 au bon endroit
+  }
+}
+
+
+surface_filtree <- surface %>%
+  filter(BufferSize == "500") # Ne garde que les données de notre BufferSize (500 car notre espèce est petite et ne voyage pas beaucoup)
+```
+
+Ici avec le code ci-dessous on avait remarqué qu'en 2018 il n'y avait aussi que 3 visites.
+```{r}
+visite <- paste0(data$Year, ".",data$Numero_Passage)
+data_visite <- cbind(visite, data)
+unique(data_visite$visite)  # Voir le nombre de visites par an (pas 4 visites en 2018 mais 3)
+```
+
+
+```{r}
+# TROUVER TOUTES LES CONDITIONS MÉTÉOROLOGIQUES
+
+data_2018.1 <- data_visite %>%
+  filter(visite == "2018.1") # Ne garder que les données de 2018.1 pour calculer les données des lieux, pareil après avec les autres années
+data_2018.2 <- data_visite %>%
+  filter(visite == "2018.2") 
+data_2018.3 <- data_visite %>%
+  filter(visite == "2018.3") 
+data_2019.1 <- data_visite %>%
+  filter(visite == "2019.1") 
+data_2019.2 <- data_visite %>%
+  filter(visite == "2019.2") 
+data_2019.3 <- data_visite %>%
+  filter(visite == "2019.3") 
+data_2019.4 <- data_visite %>%
+  filter(visite == "2019.4")
+data_2022.1 <- data_visite %>%
+  filter(visite == "2022.1") 
+data_2022.2 <- data_visite %>%
+  filter(visite == "2022.2") 
+data_2022.3 <- data_visite %>%
+  filter(visite == "2022.3") 
+data_2022.4 <- data_visite %>%
+  filter(visite == "2022.4") 
+data_2023.1 <- data_visite %>%
+  filter(visite == "2023.1") 
+data_2023.2 <- data_visite %>%
+  filter(visite == "2023.2") 
+data_2023.3 <- data_visite %>%
+  filter(visite == "2023.3") 
+
+
+# Créer une liste contenant tous les noms des dataframes
+data_names <- c("data_2018.1", "data_2018.2", "data_2018.3", 
+                "data_2019.1", "data_2019.2", "data_2019.3", "data_2019.4", 
+                "data_2022.1", "data_2022.2", "data_2022.3", "data_2022.4", 
+                "data_2023.1", "data_2023.2", "data_2023.3")
+
+# Boucle de calcul des températures moyennes
+for (data_name in data_names) {
+  # Récupérer le dataframe correspondant au nom
+  df <- get(data_name)
+  # Calcul de la Température moyenne pour chaque Code_Maille
+  df <- df %>%
+    group_by(Code_Maille) %>%
+    mutate(Temperature_moy = mean(Temperature, na.rm = TRUE)) %>%
+    ungroup()
+  # Réaffecter le dataframe modifié à son nom d'origine
+  assign(data_name, df)
+}
+
+# Boucle pour le calcul des moyennes de Recouvrement_Veg_Arb
+for (data_name in data_names) {
+  df <- get(data_name)
+  # Calcul de la moyenne de Recouvrement_Veg_Arb pour chaque Code_Maille
+  df <- df %>%
+    group_by(Code_Maille) %>%
+    mutate(RVArb_moy = mean(Recouvrement_Vegetation_Arboree, na.rm = TRUE)) %>%
+    ungroup()
+  assign(data_name, df)
+}
+
+# Boucles pour le calcul des moyennes de Recouvrement_Veg_Aq
+for (data_name in data_names) {
+  df <- get(data_name)
+  #  Calcul de la moyenne de Recouvrement_Veg_Aq pour chaque Code_Maille
+  df <- df %>%
+    group_by(Code_Maille) %>%
+    mutate(RVAq_moy = mean(Recouvrement_Vegetation_Aquatique, na.rm = TRUE)) %>%
+    ungroup()
+  assign(data_name, df)
+}
+
+for (data_name in data_names) {
+  df <- get(data_name) # Récupère la dataframe correspondante
+  df <- df %>% distinct(Code_Maille, .keep_all = TRUE)  # Garder une seule ligne par Code_Maille
+  assign(data_name, df)
+}
+
+for (data_name in data_names) {  # Transformation des dates en dates juliennes
+  df <- get(data_name)
+  df <- df %>% mutate(Date_julienne = as.numeric(strftime(as.Date(Date, format="%Y-%m-%d"), format="%j")))
+  assign(data_name, df)
+}
+```
+
+On avait remarqué en mettant le code ci-dessous qu'il manquait les données pour le site E4015N64305 pour le passage 3 de 2019.
+Par cette remarque, les informations ont été ajoutées.
+```{r}
+unique(data_2019.3$Code_Maille)  
+```
+
+
+```{r}
+# Initialiser des listes vides pour stocker des dataframes temporaires
+temp_list <- list()
+rv_arb_list <- list()
+rv_aq_list <- list()
+date_jul_list <- list()
+
+
+# Remplir les listes avec les valeurs de la dataframe pour chaque passage
+for (data_name in data_names) {
+  df <- get(data_name)
+  
+  # Extraire l'annee_passage du nom (ex: "data_2018.1" -> "2018.1")
+  annee_passage <- gsub("data_", "", data_name)
+
+  # Sélectionnez Code_Maille et la colonne qui nous intéresse, puis on renomme la colonne
+  temp_list[[annee_passage]] <- df %>% select(Code_Maille, Temperature_moy) %>% rename(!!annee_passage := Temperature_moy)
+  rv_arb_list[[annee_passage]] <- df %>% select(Code_Maille, RVArb_moy) %>% rename(!!annee_passage := RVArb_moy)
+  rv_aq_list[[annee_passage]] <- df %>% select(Code_Maille, RVAq_moy) %>% rename(!!annee_passage := RVAq_moy)
+  date_jul_list[[annee_passage]] <- df %>% select(Code_Maille, Date_julienne) %>% rename(!!annee_passage := Date_julienne)
+}
+
+# Fusionner les dataframes par Code_Maille
+df_Temperature <- Reduce(function(x, y) full_join(x, y, by = "Code_Maille"), temp_list)
+df_RVArb <- Reduce(function(x, y) full_join(x, y, by = "Code_Maille"), rv_arb_list)
+df_RVAq <- Reduce(function(x, y) full_join(x, y, by = "Code_Maille"), rv_aq_list)
+df_date_jul <- Reduce(function(x, y) full_join(x, y, by = "Code_Maille"), date_jul_list)
+```
+
+Ci-dessous on retrouve votre code (envoyé par mail) qui nous a permis de remarquer que nous avons bien 44 sites réalisés pour les odonates.
+```{r}
+sites<-read.csv("BiodiverCite_sites_up_to_2023.csv",header=TRUE,sep="\t")
+sites$X<-NULL
+sites_odo = sites[sites$Taxons == "Tous" | grepl("Odonates",sites$Taxons),]
+
+# on élimine les sites "flottants" avec que des oiseaux et des papillons etc. sur la base de la dernière colonne
+
+nrow(sites_odo) #45. Attention le dernier numéro 53 apparaît en effet quand on affiche le tableau restreint sites_odo mais ce n'est pas le nombre de lignes...
+
+sum(sites_odo$year2018)
+sum(sites_odo$year2019)
+sum(sites_odo$year2022)
+sum(sites_odo$year2023) #25 sites à chaque fois
+```
+
+On a vu que la matrice mat_y avait des lieux qui n'était pas observé pour les odonates donc il fallait conserver uniquement les lieux apparaissant dans le jeu de données des odonates, nous avons donc trier pour ne conserver que les bons lieux (on en a bien 44)
+```{r}
+y_finale <- mat_y %>% filter(code_site %in% data$Code_Maille)
+
+
+mat_y <- mat_y[order(mat_y$code_site), ]  # ordre alphabétique des sites dans mat_y
+df_date_jul <- df_date_jul[order(df_date_jul$Code_Maille), ]
+df_RVAq <- df_RVAq[order(df_RVAq$Code_Maille), ]
+df_RVArb <- df_RVArb[order(df_RVArb$Code_Maille), ]
+df_Temperature <- df_Temperature[order(df_Temperature$Code_Maille), ]
+y_finale <- y_finale[order(y_finale$code_site), ]
+```
+Nous avons à ce moment la matrice présence/absence y_finale où nous avons les observations NA, 0 et 1 pour le modèle. Nous avons les matrices df_date_jul, df_Temperature df_RVAq et df_RVArb, qui sont nos données, concernant les lieux, que nous allons utiliser pour le modèle occupancy.
+
+```{r}
+?unmarked
+?occu
+```
+
+Cette partie permet de faire notre vecteur artificialisation pour notre modèle occupancy (ici il représente la variable présence), dans le modèle ce sera siteCovs. On ne garde que MOS11 qui correspond à l'artificialisation.
+```{r}
+artificialisation <- surface_filtree %>% filter(ID %in% data$Code_Maille)
+artificialisation <- artificialisation[order(artificialisation$ID), ]
+artif <- artificialisation$MOS11
+```
+
+```{r}
+# Convertir les matrices de covariables en format numérique sans toucher aux NA
+df_date_jul_mat <- as.matrix(sapply(df_date_jul[, -1], as.numeric))
+df_Temperature_mat <- as.matrix(sapply(df_Temperature[, -1], as.numeric))
+df_RVAq_mat <- as.matrix(sapply(df_RVAq[, -1], as.numeric))
+df_RVArb_mat <- as.matrix(sapply(df_RVArb[, -1], as.numeric))
+
+# Convertir la matrice de présence/absence (y_finale) en format numérique sans toucher aux NA
+y_finale_mat <- as.matrix(sapply(y_finale[, -1], as.numeric))
+
+# Transformer artificialisation en un vecteur numérique
+artif_finale <- as.numeric(artif)
+```
+
+```{r}
+# Créer un unmarkedFrame pour l'occurrence
+umf <- unmarkedFrameOccu(y = y_finale_mat, 
+                         siteCovs = data.frame(artificialisation = artif_finale), 
+                         obsCovs = list(date_julienne = df_date_jul_mat, 
+                                        temperature = df_Temperature_mat, 
+                                        RVAq = df_RVAq_mat, 
+                                        RVArb = df_RVArb_mat))
+
+# Ajuster un modèle d'occurrence
+mod_occu <- occu(~ date_julienne + temperature + RVAq + RVArb ~ artificialisation, data = umf)
+
+# Résumé du modèle
+summary(mod_occu)
+```
+
+Pour la première libellule, nous avions ajouter cette partie de code pour montrer que nous avons beaucoup de NA, ce qui peut potentiellement jouer sur la validité de notre modèle.
+```{r}
+colSums(is.na(y_finale_mat))
+```
+```{r}
+# Extraire les coefficients du modèle
+coefs <- coef(mod_occu)
+
+# Moyennes des covariables utilisées pour la prédiction
+mean_temp <- mean(df_Temperature_mat, na.rm = TRUE)
+mean_date <- mean(df_date_jul_mat, na.rm = TRUE)
+mean_rvaq <- mean(df_RVAq_mat, na.rm = TRUE)
+mean_rvarb <- mean(df_RVArb_mat, na.rm = TRUE)
+
+# Fonction pour calculer la prédiction logistique et son IC
+get_pred_df <- function(var_name, var_range, mean_vals, coef_vals) {
+  # var_name: "temperature", "date_julienne", etc.
+  # var_range: une séquence de valeurs pour la variable
+  # mean_vals: une liste avec les moyennes des autres covariables
+  # coef_vals: les coefficients extraits du modèle
+  
+  se_vals <- SE(mod_occu)  # Erreurs standards
+  
+  intercept <- coef_vals["p(Int)"]
+  beta <- coef_vals[paste0("p(", var_name, ")")]
+  
+  # Coefficients des autres variables
+  covariables <- setdiff(c("temperature", "date_julienne", "RVAq", "RVArb"), var_name)
+  other_effects <- sapply(covariables, function(v) {
+    coef_vals[paste0("p(", v, ")")] * mean_vals[[v]]
+  })
+  
+  logit <- intercept + beta * var_range + sum(other_effects)
+  prob <- plogis(logit)
+  
+  # Approximation de l'IC 95% sur l'effet principal (seulement pour la covariable)
+  se <- se_vals[paste0("p(", var_name, ")")]
+  logit_upper <- logit + 1.96 * se * var_range
+  logit_lower <- logit - 1.96 * se * var_range
+
+  data.frame(
+    x = var_range,
+    prob = prob,
+    IC_min = plogis(logit_lower),
+    IC_max = plogis(logit_upper)
+  )
+}
+
+# Liste des moyennes
+mean_vals <- list(
+  temperature = mean_temp,
+  date_julienne = mean_date,
+  RVAq = mean_rvaq,
+  RVArb = mean_rvarb
+)
+
+# Générer les plages à partir des données observées
+temp_range <- seq(min(df_Temperature_mat, na.rm = TRUE), max(df_Temperature_mat, na.rm = TRUE), length.out = 100)
+date_range <- seq(min(df_date_jul_mat, na.rm = TRUE), max(df_date_jul_mat, na.rm = TRUE), length.out = 100)
+rvaq_range <- seq(min(df_RVAq_mat, na.rm = TRUE), max(df_RVAq_mat, na.rm = TRUE), length.out = 100)
+rvarb_range <- seq(min(df_RVArb_mat, na.rm = TRUE), max(df_RVArb_mat, na.rm = TRUE), length.out = 100)
+```
+
+```{r}
+# 1. Température
+df_temp <- get_pred_df("temperature", temp_range, mean_vals, coefs)
+ggplot(df_temp, aes(x = x, y = prob)) +
+  geom_line(color = "darkred", linewidth = 1.2) +
+  geom_ribbon(aes(ymin = IC_min, ymax = IC_max), alpha = 0.2, fill = "red") +
+  labs(title = "Effet de la température sur la probabilité de détection",
+       x = "Température moyenne (°C)",
+       y = "Probabilité de détection") +
+  theme_minimal()
+
+# 2. Date julienne
+df_date <- get_pred_df("date_julienne", date_range, mean_vals, coefs)
+ggplot(df_date, aes(x = x, y = prob)) +
+  geom_line(color = "darkblue", linewidth = 1.2) +
+  geom_ribbon(aes(ymin = IC_min, ymax = IC_max), alpha = 0.2, fill = "blue") +
+  labs(title = "Effet de la date (julienne) sur la probabilité de détection",
+       x = "Date (jour julien)",
+       y = "Probabilité de détection") +
+  theme_minimal()
+
+# 3. Recouvrement végétation aquatique
+df_rvaq <- get_pred_df("RVAq", rvaq_range, mean_vals, coefs)
+ggplot(df_rvaq, aes(x = x, y = prob)) +
+  geom_line(color = "darkgreen", linewidth = 1.2) +
+  geom_ribbon(aes(ymin = IC_min, ymax = IC_max), alpha = 0.2, fill = "green") +
+  labs(title = "Effet du recouvrement de végétation aquatique sur la détection",
+       x = "Recouvrement végétation aquatique (%)",
+       y = "Probabilité de détection") +
+  theme_minimal()
+
+# 4. Recouvrement végétation arborée
+df_rvarb <- get_pred_df("RVArb", rvarb_range, mean_vals, coefs)
+ggplot(df_rvarb, aes(x = x, y = prob)) +
+  geom_line(color = "darkorange", linewidth = 1.2) +
+  geom_ribbon(aes(ymin = IC_min, ymax = IC_max), alpha = 0.2, fill = "orange") +
+  labs(title = "Effet du recouvrement de végétation arborée sur la détection",
+       x = "Recouvrement végétation arborée (%)",
+       y = "Probabilité de détection") +
+  theme_minimal()
+
+```
+
+
+
+```{r}
+# Fonction d’analyse de puissance avec 25 sites permanents
+simulate_and_fit_perm_only <- function(beta_psi = 1, n_sim = 200, alpha = 0.05) {
+  
+  set.seed(123)
+  significant_count <- 0
+
+  for (i in 1:n_sim) {
+    
+    # Design : 25 sites suivis pendant 5 ans avec 3 visites chacun
+    n_sites <- 25
+    n_visits <- 3
+    n_annees <- 5
+    # Note : pas besoin de gérer les années ici, car on suppose un site par ligne
+    artificialisation <- rnorm(n_sites)
+    
+    # Occupation simulée
+    logit_psi <- -0.5 + beta_psi * artificialisation
+    psi <- plogis(logit_psi)
+    z <- rbinom(n_sites, 1, psi)
+
+    # Détection simulée
+    p <- 0.6
+    y <- matrix(0, nrow = n_sites, ncol = n_visits*n_annees)
+    for (j in 1:n_sites) {
+      for (k in 1:n_visits*n_annees) {
+        y[j, k] <- rbinom(1, 1, z[j] * p)
+      }
+    }
+
+    umf <- unmarkedFrameOccu(y = y, siteCovs = data.frame(artificialisation = artificialisation))
+    
+    fit <- tryCatch(
+      occu(~1 ~ artificialisation, data = umf),
+      error = function(e) NULL
+    )
+    
+    if (!is.null(fit)) {
+      est <- summary(fit)$state
+      p_val <- est["artificialisation", "P(>|z|)"]
+      
+      if (!is.na(p_val) && p_val < alpha) {
+        significant_count <- significant_count + 1
+      }
+    }
+  }
+  
+  return(significant_count / n_sim)
+}
+
+simulate_and_fit_perm_only(beta_psi = 1, n_sim = 200, alpha = 0.05)
+```
+```{r}
+#Fonction d'Analyse de puissance avec 20 sites permanents et 5 sites flottants
+simulate_and_fit_mixed <- function(beta_psi = 1, n_sim = 200, alpha = 0.05) {
+  
+  set.seed(123)
+  significant_count <- 0
+  
+  for (i in 1:n_sim) {
+    
+    # Paramètres du design
+    n_years <- 5
+    n_visits <- 3
+    n_perm <- 20
+    n_float <- 5
+    
+    # Total : 20 sites permanents * 5 ans + 5 flottants * 5 ans (nouveaux chaque année)
+    n_rows_perm <- n_perm * n_years
+    n_rows_float <- n_float * n_years
+    total_rows <- n_rows_perm + n_rows_float  # total site-année
+    
+    # Covariable d’artificialisation aléatoire
+    artificialisation <- rnorm(total_rows)
+    
+    # Occupation simulée
+    logit_psi <- -0.5 + beta_psi * artificialisation
+    psi <- plogis(logit_psi)
+    z <- rbinom(total_rows, 1, psi)
+
+    # Détection : 3 visites par site-année
+    p <- 0.6
+    y <- matrix(0, nrow = total_rows, ncol = n_visits)
+    for (j in 1:total_rows) {
+      for (k in 1:n_visits) {
+        y[j, k] <- rbinom(1, 1, z[j] * p)
+      }
+    }
+    
+    # Format pour unmarked
+    umf <- unmarkedFrameOccu(
+      y = y,
+      siteCovs = data.frame(artificialisation = artificialisation)
+    )
+    
+    # Ajustement du modèle occupancy
+    fit <- tryCatch(
+      occu(~1 ~ artificialisation, data = umf),
+      error = function(e) NULL
+    )
+    
+    if (!is.null(fit)) {
+      est <- summary(fit)$state
+      p_val <- est["artificialisation", "P(>|z|)"]
+      
+      if (!is.na(p_val) && p_val < alpha) {
+        significant_count <- significant_count + 1
+      }
+    }
+  }
+  
+  return(significant_count / n_sim)
+}
+
+simulate_and_fit_mixed(beta_psi = 1, n_sim = 200, alpha = 0.05)
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
